@@ -1,10 +1,10 @@
-import { CheckSquare, ScrollText, Trophy } from "lucide-react";
+import { BookOpenCheck, CheckSquare, ScrollText, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../i18n/useLanguage";
 
 type BottomNavProps = {
   slug: string;
-  active: "checklist" | "ranking" | "result";
+  active: "checklist" | "guide" | "ranking" | "result";
 };
 
 export default function BottomNav({ slug, active }: BottomNavProps) {
@@ -15,6 +15,12 @@ export default function BottomNav({ slug, active }: BottomNavProps) {
       label: t("nav.checklist"),
       to: `/event/${slug}/checklist`,
       icon: CheckSquare
+    },
+    {
+      id: "guide" as const,
+      label: t("nav.quickStart"),
+      to: `/event/${slug}/quick-start`,
+      icon: BookOpenCheck
     },
     {
       id: "ranking" as const,

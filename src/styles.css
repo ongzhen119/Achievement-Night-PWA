@@ -180,6 +180,7 @@ label {
 .result-card h1,
 .host-control h1,
 .form-panel h1,
+.quick-guide-hero h1,
 .ranking-poster h1 {
   position: relative;
   color: #fff6e6;
@@ -582,6 +583,211 @@ label {
   font-weight: 800;
 }
 
+.quick-guide-page {
+  gap: 14px;
+}
+
+.quick-guide-hero {
+  display: grid;
+  gap: 13px;
+}
+
+.quick-guide-hero .secondary-button {
+  width: 100%;
+}
+
+.quick-complete-banner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid rgba(216, 167, 71, 0.42);
+  border-radius: 8px;
+  color: #fff1c9;
+  background: rgba(216, 167, 71, 0.14);
+  padding: 12px;
+}
+
+.quick-complete-banner svg {
+  color: var(--gold);
+}
+
+.quick-step-list {
+  display: grid;
+  gap: 12px;
+}
+
+.quick-step-card {
+  display: grid;
+  gap: 13px;
+  border: 1px solid rgba(212, 189, 140, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
+    rgba(18, 15, 13, 0.74);
+  padding: 14px;
+  box-shadow: 0 14px 28px var(--shadow);
+}
+
+.quick-step-card.complete {
+  border-color: rgba(216, 167, 71, 0.62);
+  background:
+    linear-gradient(180deg, rgba(216, 167, 71, 0.12), rgba(127, 152, 111, 0.08)),
+    rgba(31, 27, 24, 0.88);
+}
+
+.quick-step-header {
+  display: grid;
+  gap: 10px;
+}
+
+.quick-step-header h2 {
+  margin-top: 4px;
+  color: #fff1c9;
+  font-size: 1.18rem;
+  line-height: 1.15;
+}
+
+.quick-step-header .muted {
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.quick-step-state {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(216, 167, 71, 0.38);
+  border-radius: 999px;
+  color: #ffe7aa;
+  background: rgba(216, 167, 71, 0.12);
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.quick-checklist {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-check-item {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(212, 189, 140, 0.16);
+  border-radius: 8px;
+  color: #eee3d4;
+  background: rgba(15, 13, 12, 0.66);
+  padding: 10px 11px;
+  line-height: 1.35;
+}
+
+.quick-check-item input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--gold);
+}
+
+.quick-check-item:has(input:checked) {
+  color: #fff6e6;
+  border-color: rgba(216, 167, 71, 0.44);
+  background: rgba(216, 167, 71, 0.12);
+}
+
+.quick-details-toggle {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(212, 189, 140, 0.22);
+  border-radius: 8px;
+  color: #ffe9b8;
+  background: rgba(31, 27, 24, 0.88);
+  font-weight: 850;
+}
+
+.quick-details-toggle svg {
+  transition: transform 0.18s ease;
+}
+
+.quick-details-toggle svg.expanded {
+  transform: rotate(180deg);
+}
+
+.quick-extra-content {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid rgba(216, 167, 71, 0.16);
+  padding-top: 12px;
+}
+
+.quick-detail-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.quick-note-list {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-note {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  border: 1px solid rgba(127, 152, 111, 0.3);
+  border-radius: 8px;
+  color: #e9f0d9;
+  background: rgba(127, 152, 111, 0.13);
+  padding: 10px;
+}
+
+.quick-note p {
+  margin-top: 3px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.quick-warning-block {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-warning-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffe0a2;
+}
+
+.quick-warning-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.quick-warning-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(229, 106, 46, 0.28);
+  border-radius: 999px;
+  color: #ffe1c8;
+  background: rgba(105, 38, 34, 0.24);
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
 .centered-panel {
   display: grid;
   gap: 12px;
@@ -593,9 +799,9 @@ label {
   left: 50%;
   bottom: 12px;
   z-index: 10;
-  width: min(calc(100% - 28px), 520px);
+  width: min(calc(100% - 28px), 620px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   transform: translateX(-50%);
   border: 1px solid rgba(216, 167, 71, 0.24);
@@ -613,8 +819,10 @@ label {
   gap: 2px;
   border-radius: 8px;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .bottom-nav a.active {

@@ -1,5 +1,5 @@
-const CACHE_NAME = "achievement-night-shell-v1";
-const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/achievement-night.svg"];
+const CACHE_NAME = "achievement-shell-v1";
+const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/achievement.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

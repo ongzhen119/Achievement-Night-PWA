@@ -1,6 +1,6 @@
-# Achievement Night PWA
+# Achievement PWA
 
-Mobile-first React + Vite + TypeScript PWA for casual weekly tabletop nights. Players join by event link, enter the host join code, save achievements to Supabase, and view a live ranking. Hosts use a pin-gated page to manage players, reset achievements, lock the event, and screenshot the ranking.
+Mobile-first React + Vite + TypeScript PWA for casual weekly tabletop events. Players join by event link, enter the host join code, save achievements to Supabase, and view a live ranking. Hosts use a pin-gated page to manage players, reset achievements, lock the event, and screenshot the ranking.
 
 ## Run Locally
 
@@ -114,22 +114,22 @@ For live ranking updates, enable Realtime for `players`, `player_achievements`, 
 
 ## Create a New Weekly Event
 
-Insert one row into `events` for each weekly night:
+Insert one row into `events` for each weekly event:
 
 ```sql
 insert into public.events (slug, name, event_date, join_code, host_pin)
 values (
-  'aexern-achievement-night-2026-06-13',
-  'Aexern Achievement Night',
+  'aexern-achievement-2026-06-13',
+  'Aexern Achievement',
   '2026-06-13',
   'EMBER13',
   'HOST-1337'
 );
 ```
 
-Players use `/event/aexern-achievement-night-2026-06-13`.
+Players use `/event/aexern-achievement-2026-06-13`.
 
-Hosts use `/event/aexern-achievement-night-2026-06-13/host`.
+Hosts use `/event/aexern-achievement-2026-06-13/host`.
 
 ## Edit Checklist Wording
 
@@ -152,14 +152,14 @@ The checklist score is calculated from checked rows in `player_achievements`, no
 After deploying the PWA, send the event URL to the group chat:
 
 ```txt
-https://your-domain.example/event/aexern-achievement-night-2026-06-13
+https://your-domain.example/event/aexern-achievement-2026-06-13
 ```
 
 Include the join code in the message. Example:
 
 ```txt
-Achievement Night is open.
-Link: https://your-domain.example/event/aexern-achievement-night-2026-06-13
+Achievement is open.
+Link: https://your-domain.example/event/aexern-achievement-2026-06-13
 Join code: EMBER13
 ```
 

@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
-import { CalendarDays, Flame, Shield } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { BookOpenCheck, CalendarDays, Flame, Shield } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import LanguageToggle from "../components/LanguageToggle";
 import { useLanguage } from "../i18n/useLanguage";
 import { formatEventDate } from "../utils/date";
@@ -160,6 +160,10 @@ export default function EventJoinPage() {
         >
           {isLocked ? t("join.lockedButton") : t("join.enterButton")}
         </button>
+        <Link className="secondary-button" to={`/event/${slug}/quick-start`}>
+          <BookOpenCheck size={18} aria-hidden="true" />
+          <span>{t("join.guideLink")}</span>
+        </Link>
       </form>
     </main>
   );

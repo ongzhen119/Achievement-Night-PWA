@@ -8,7 +8,7 @@ import {
 } from "react";
 import { Language, translations, TranslationKey } from "./translations";
 
-const LANGUAGE_STORAGE_KEY = "achievement-night-language";
+const LANGUAGE_STORAGE_KEY = "achievement-language";
 
 type LanguageContextValue = {
   language: Language;

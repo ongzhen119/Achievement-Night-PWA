@@ -1,14 +1,14 @@
 {
-  "name": "Achievement Night",
-  "short_name": "Achieve Night",
-  "description": "A mobile-first achievement tracker for casual tabletop nights.",
+  "name": "Achievement",
+  "short_name": "Achievement",
+  "description": "A mobile-first achievement tracker for casual tabletop events.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#171411",
   "theme_color": "#171411",
   "icons": [
     {
-      "src": "/icons/achievement-night.svg",
+      "src": "/icons/achievement.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

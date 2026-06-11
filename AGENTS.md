@@ -2,11 +2,11 @@
 
 ## Project Name
 
-Achievement Night PWA
+Achievement PWA
 
 ## Purpose
 
-Build a mobile-first PWA for casual tabletop community nights.
+Build a mobile-first PWA for casual tabletop community events.
 
 Players open an event link from WhatsApp, enter their name and warband, tick achievements, see their title/level, and view a live event ranking.
 
@@ -76,7 +76,7 @@ Each event has its own URL:
 
 Example:
 
-`/event/aexern-achievement-night-2026-06-13`
+`/event/aexern-achievement-2026-06-13`
 
 Player flow:
 
@@ -239,10 +239,10 @@ Show live ranking for current event:
 This page must be screenshot-friendly.
 
 Title:
-“Tonight’s Achievement Ranking”
+“Achievement Ranking”
 
 Footer:
-“Casual Achievement Night · Honour System · Play for the story”
+“Casual Achievement · Honour System · Play for the story”
 
 ### 4. Result Card Page
 
@@ -305,7 +305,7 @@ After validation, show:
 * Come back after falling behind / 落后后追回比分
 * Help another player understand a rule / 帮助对手理解一个规则或流程
 * Create a moment that makes the table react / 完成一次让全桌惊呼的精彩行动
-* Make one player say: “I want to come again next time” / 让今晚其中一位玩家说：‘下次还想再来！’
+* Make one player say: “I want to come again next time” / 让其中一位玩家说：‘下次还想再来！’
 
 ## Levels
 
@@ -314,7 +314,7 @@ Use score to determine title:
 * 0–4: Arena Initiate / 初入竞技场
 * 5–8: Rising Challenger / 崭露锋芒
 * 9–12: Glory Hunter / 荣耀追猎者
-* 13–16: Tonight’s Legend / 今晚传奇
+* 13–16: Event Legend / 活动传奇
 
 Store level logic in:
 
@@ -415,7 +415,7 @@ The app should be installable.
 Requirements:
 
 * manifest
-* app name: Achievement Night
+* app name: Achievement
 * original icon only
 * offline shell is okay
 * data requires internet when syncing to Supabase

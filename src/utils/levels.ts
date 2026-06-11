@@ -23,14 +23,14 @@ export const levelBands: LevelBand[] = [
   {
     min: 13,
     max: 16,
-    titleKey: "level.tonightsLegend"
+    titleKey: "level.eventLegend"
   }
 ];
 
 export function getLevelTitleKey(score: number) {
   return (
     levelBands.find((band) => score >= band.min && score <= band.max)
-      ?.titleKey ?? "level.tonightsLegend"
+      ?.titleKey ?? "level.eventLegend"
   );
 }
 

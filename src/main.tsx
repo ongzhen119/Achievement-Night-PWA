@@ -5,6 +5,7 @@ import { LanguageProvider, useLanguage } from "./i18n/useLanguage";
 import ChecklistPage from "./pages/ChecklistPage";
 import EventJoinPage from "./pages/EventJoinPage";
 import HostPage from "./pages/HostPage";
+import QuickStartGuidePage from "./pages/QuickStartGuidePage";
 import RankingPage from "./pages/RankingPage";
 import ResultCardPage from "./pages/ResultCardPage";
 import { registerServiceWorker } from "./utils/registerServiceWorker";
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<EmptyRoute />} />
           <Route path="/event/:slug" element={<EventJoinPage />} />
           <Route path="/event/:slug/checklist" element={<ChecklistPage />} />
+          <Route path="/event/:slug/quick-start" element={<QuickStartGuidePage />} />
           <Route path="/event/:slug/ranking" element={<RankingPage />} />
           <Route path="/event/:slug/result" element={<ResultCardPage />} />
           <Route path="/event/:slug/host" element={<HostPage />} />
