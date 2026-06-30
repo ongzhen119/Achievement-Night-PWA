@@ -171,6 +171,12 @@ export default function ResultCardPage() {
           {copyStatusKey ? (
             <p className="status-line">{t(copyStatusKey)}</p>
           ) : null}
+          <Link
+            className="secondary-button"
+            to={`/event/${slug}/battle-record`}
+          >
+            {t("nav.battleRecord")}
+          </Link>
         </section>
       ) : null}
 

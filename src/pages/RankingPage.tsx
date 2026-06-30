@@ -77,6 +77,7 @@ export default function RankingPage() {
           {rankings.map((player, index) => (
             <RankingCard
               displayName={player.display_name}
+              isChampion={Boolean(eventRecord?.is_locked) && index === 0}
               key={player.id}
               progressPercent={getProgressPercent(player.score, maxAchievementScore)}
               rankText={formatText(t("ranking.rankTemplate"), {

@@ -1,5 +1,7 @@
 ﻿param(
-  [string]$OutputPath = (Join-Path $PSScriptRoot "aexern-underworlds-saturday-poster.png")
+  [string]$OutputPath = (Join-Path $PSScriptRoot "aexern-underworlds-saturday-poster.png"),
+  [ValidateRange(1, 4)]
+  [int]$Scale = 1
 )
 
 Add-Type -AssemblyName System.Drawing
@@ -8,12 +10,13 @@ $ErrorActionPreference = "Stop"
 
 $width = 1080
 $height = 1920
-$bitmap = New-Object System.Drawing.Bitmap $width, $height
+$bitmap = New-Object System.Drawing.Bitmap ($width * $Scale), ($height * $Scale)
 $g = [System.Drawing.Graphics]::FromImage($bitmap)
 $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
 $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
 $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
 $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+$g.ScaleTransform($Scale, $Scale)
 
 function C {
   param([string]$Hex, [int]$Alpha = 255)

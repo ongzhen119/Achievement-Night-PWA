@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LanguageToggle from "../components/LanguageToggle";
 import { useLanguage } from "../i18n/useLanguage";
 import { formatEventDate } from "../utils/date";
+import { getCommunityProfile, getOrCreateCommunityPlayerId } from "../utils/communityProfile";
 import { joinPlayer, fetchEventBySlug } from "../utils/eventData";
 import { setCurrentPlayerCache } from "../utils/storage";
 import { EventRecord } from "../utils/supabase";
@@ -14,8 +15,8 @@ export default function EventJoinPage() {
   const { language, t } = useLanguage();
   const [eventRecord, setEventRecord] = useState<EventRecord | null>(null);
   const [joinCode, setJoinCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [warband, setWarband] = useState("");
+  const [displayName, setDisplayName] = useState(() => getCommunityProfile()?.displayName ?? "");
+  const [warband, setWarband] = useState(() => getCommunityProfile()?.warband ?? "");
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -66,7 +67,7 @@ export default function EventJoinPage() {
     setSubmitting(true);
     setErrorKey(null);
 
-    const result = await joinPlayer(slug, joinCode, displayName, warband);
+    const result = await joinPlayer(slug, joinCode, displayName, warband, getOrCreateCommunityPlayerId());
 
     if ("player" in result && result.player) {
       setCurrentPlayerCache(slug, {

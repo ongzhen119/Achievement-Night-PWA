@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import HostPlayerRow from "../components/HostPlayerRow";
 import LanguageToggle from "../components/LanguageToggle";
 import RankingCard from "../components/RankingCard";
+import { SEASON_OPTIONS } from "../data/seasons";
 import { maxAchievementScore } from "../data/achievements";
 import { useLanguage } from "../i18n/useLanguage";
 import { formatEventDate } from "../utils/date";
@@ -11,9 +12,12 @@ import {
   deletePlayer,
   fetchEventBySlug,
   fetchRankings,
+  isChampionRecorded,
   RankedPlayer,
+  recordChampion,
   resetPlayerAchievements,
-  setEventLocked
+  setEventLocked,
+  setEventSeason
 } from "../utils/eventData";
 import { formatText } from "../utils/format";
 import { getProgressPercent } from "../utils/levels";
@@ -24,6 +28,8 @@ export default function HostPage() {
   const { language, t } = useLanguage();
   const [eventRecord, setEventRecord] = useState<EventRecord | null>(null);
   const [rankings, setRankings] = useState<RankedPlayer[]>([]);
+  const [championRecorded, setChampionRecorded] = useState(false);
+  const [seasonDraft, setSeasonDraft] = useState("");
   const [pin, setPin] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -40,8 +46,14 @@ export default function HostPage() {
         return;
       }
 
+      const [rankingsData, recorded] = await Promise.all([
+        fetchRankings(eventData.id),
+        isChampionRecorded(eventData.id)
+      ]);
+
       setEventRecord(eventData);
-      setRankings(await fetchRankings(eventData.id));
+      setRankings(rankingsData);
+      setChampionRecorded(recorded);
       setErrorKey(null);
     } catch (error) {
       setErrorKey(error instanceof Error ? error.message : "status.saveError");
@@ -77,9 +89,7 @@ export default function HostPage() {
   }
 
   async function handleLockToggle() {
-    if (!eventRecord) {
-      return;
-    }
+    if (!eventRecord) return;
 
     try {
       setActionBusy(true);
@@ -92,10 +102,56 @@ export default function HostPage() {
     }
   }
 
-  async function handleReset(playerId: string) {
-    if (!window.confirm(t("host.confirmReset"))) {
-      return;
+  async function handleSetSeason() {
+    if (!eventRecord || !seasonDraft) return;
+
+    try {
+      setActionBusy(true);
+      await setEventSeason(eventRecord.id, seasonDraft);
+      await loadHostData();
+      setSeasonDraft("");
+    } catch (error) {
+      setErrorKey(error instanceof Error ? error.message : "status.hostActionError");
+    } finally {
+      setActionBusy(false);
     }
+  }
+
+  async function handleRecordChampion() {
+    if (!eventRecord || !rankings[0] || !eventRecord.season_label) return;
+
+    const champion = rankings[0];
+    const confirmed = window.confirm(
+      formatText(t("host.confirmChampion"), {
+        name: champion.display_name,
+        warband: champion.warband,
+        score: champion.score
+      })
+    );
+    if (!confirmed) return;
+
+    try {
+      setActionBusy(true);
+      await recordChampion(
+        eventRecord.id,
+        eventRecord.season_label,
+        eventRecord.name,
+        eventRecord.event_date,
+        champion.display_name,
+        champion.warband,
+        champion.score,
+        champion.community_player_id ?? undefined
+      );
+      setChampionRecorded(true);
+    } catch (error) {
+      setErrorKey(error instanceof Error ? error.message : "status.hostActionError");
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function handleReset(playerId: string) {
+    if (!window.confirm(t("host.confirmReset"))) return;
 
     try {
       setActionBusy(true);
@@ -109,9 +165,7 @@ export default function HostPage() {
   }
 
   async function handleDelete(playerId: string) {
-    if (!window.confirm(t("host.confirmDelete"))) {
-      return;
-    }
+    if (!window.confirm(t("host.confirmDelete"))) return;
 
     try {
       setActionBusy(true);
@@ -170,6 +224,37 @@ export default function HostPage() {
                 </p>
               ) : null}
             </div>
+
+            <div className="host-season-row">
+              <span>{t("host.seasonLabel")}</span>
+              {eventRecord?.season_label ? (
+                <span className="season-tag">{eventRecord.season_label}</span>
+              ) : (
+                <div className="host-season-select">
+                  <select
+                    className="app-select"
+                    onChange={(e) => setSeasonDraft(e.target.value)}
+                    value={seasonDraft}
+                  >
+                    <option value="">{t("host.seasonPlaceholder")}</option>
+                    {SEASON_OPTIONS.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="secondary-button"
+                    disabled={!seasonDraft || actionBusy}
+                    onClick={handleSetSeason}
+                    type="button"
+                  >
+                    {t("host.seasonSaveButton")}
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="status-pill">
               {eventRecord?.is_locked ? (
                 <Lock size={16} aria-hidden="true" />
@@ -224,6 +309,36 @@ export default function HostPage() {
               <p className="muted">{t("host.noPlayers")}</p>
             ) : null}
           </section>
+
+          {eventRecord?.is_locked && rankings.length > 0 ? (
+            <section className="panel host-champion-section">
+              <p className="eyebrow">{t("host.recordChampionHeading")}</p>
+              {championRecorded ? (
+                <p className="status-line">{t("host.championRecordedStatus")}</p>
+              ) : (
+                <>
+                  <p className="muted">{t("host.recordChampionBody")}</p>
+                  <div className="champion-preview">
+                    <strong>{rankings[0].display_name}</strong>
+                    <span>
+                      {rankings[0].warband} · {rankings[0].score} pts
+                    </span>
+                  </div>
+                  {!eventRecord.season_label ? (
+                    <p className="warning-line">{t("host.noSeasonWarning")}</p>
+                  ) : null}
+                  <button
+                    className="primary-button"
+                    disabled={actionBusy || !eventRecord.season_label}
+                    onClick={handleRecordChampion}
+                    type="button"
+                  >
+                    {t("host.recordChampionButton")}
+                  </button>
+                </>
+              )}
+            </section>
+          ) : null}
 
           <section className="ranking-poster panel">
             <p className="eyebrow">{t("host.previewHeading")}</p>

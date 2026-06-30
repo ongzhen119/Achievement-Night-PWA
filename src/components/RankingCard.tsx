@@ -5,6 +5,7 @@ type RankingCardProps = {
   scoreText: string;
   title: string;
   progressPercent: number;
+  isChampion?: boolean;
 };
 
 export default function RankingCard({
@@ -13,10 +14,11 @@ export default function RankingCard({
   warband,
   scoreText,
   title,
-  progressPercent
+  progressPercent,
+  isChampion
 }: RankingCardProps) {
   return (
-    <article className="ranking-card">
+    <article className={`ranking-card${isChampion ? " champion-card" : ""}`}>
       <div className="rank-badge">{rankText}</div>
       <div className="ranking-main">
         <h2>{displayName}</h2>

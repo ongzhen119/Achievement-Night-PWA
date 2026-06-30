@@ -82,6 +82,7 @@ export default function ChecklistPage() {
     });
   }, [eventRecord, loadChecklist]);
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const completedSet = useMemo(() => new Set(completedIds), [completedIds]);
   const score = achievements.reduce(
     (total, achievement) =>
@@ -163,7 +164,17 @@ export default function ChecklistPage() {
         />
       ) : null}
 
-      {achievementSections.map((section) => {
+      <section className="panel">
+        <button
+          className="secondary-button"
+          onClick={() => setShowAdvanced((v) => !v)}
+          type="button"
+        >
+          {showAdvanced ? t("checklist.hideAdvanced") : t("checklist.showAdvanced")}
+        </button>
+      </section>
+
+      {showAdvanced ? achievementSections.map((section) => {
         const sectionAchievements = achievements.filter(
           (achievement) => achievement.sectionKey === section.titleKey
         );
@@ -205,7 +216,7 @@ export default function ChecklistPage() {
             })}
           </SectionPanel>
         );
-      })}
+      }) : null}
 
       <BottomNav active="checklist" slug={slug} />
     </main>

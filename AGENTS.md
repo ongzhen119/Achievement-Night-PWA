@@ -1,4 +1,26 @@
 # AGENTS.md
+# Product Vision
+
+This application is not an achievement app.
+
+It is a community platform for local Warhammer Underworlds events.
+
+The priorities are:
+
+1. Organise local events
+2. Preserve community history
+3. Celebrate champions
+4. Encourage player retention
+5. Achievements are optional side content
+
+Every new feature should strengthen the community first before adding competitive systems.
+
+Avoid unnecessary complexity.
+
+Minimise login barriers.
+
+Preserve simplicity for first-time players.
+
 
 ## Project Name
 

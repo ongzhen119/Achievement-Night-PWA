@@ -17,6 +17,20 @@ export type EventRecord = {
   join_code: string;
   host_pin: string;
   is_locked: boolean;
+  season_label: string | null;
+  created_at: string;
+};
+
+export type HallOfFameRecord = {
+  id: string;
+  season_label: string;
+  event_id: string;
+  event_name: string;
+  event_date: string;
+  champion_name: string;
+  warband: string;
+  score: number;
+  community_player_id: string | null;
   created_at: string;
 };
 
@@ -25,6 +39,23 @@ export type PlayerRecord = {
   event_id: string;
   display_name: string;
   warband: string;
+  community_player_id: string | null;
+  created_at: string;
+};
+
+export type BattleRecordRecord = {
+  id: string;
+  community_player_id: string;
+  event_id: string | null;
+  event_slug: string | null;
+  battle_result: "win" | "loss" | "draw";
+  warband: string;
+  opponent_warband: string | null;
+  format: string | null;
+  epic_moments: string[] | null;
+  glory_score: number | null;
+  notes: string | null;
+  display_name: string | null;
   created_at: string;
 };
 

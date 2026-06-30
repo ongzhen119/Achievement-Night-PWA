@@ -3,6 +3,7 @@ import { getLevelTitleKey } from "./levels";
 import {
   EventRecord,
   getSupabaseClient,
+  HallOfFameRecord,
   PlayerAchievementRecord,
   PlayerRecord
 } from "./supabase";
@@ -44,7 +45,8 @@ export async function joinPlayer(
   slug: string,
   joinCode: string,
   displayName: string,
-  warband: string
+  warband: string,
+  communityPlayerId?: string
 ) {
   try {
     const event = await fetchEventBySlug(slug);
@@ -67,7 +69,8 @@ export async function joinPlayer(
       .insert({
         event_id: event.id,
         display_name: displayName.trim(),
-        warband: warband.trim()
+        warband: warband.trim(),
+        ...(communityPlayerId ? { community_player_id: communityPlayerId } : {})
       })
       .select("*")
       .single();
@@ -241,12 +244,142 @@ export async function setEventLocked(eventId: string, isLocked: boolean) {
   const client = getSupabaseClient();
   const { error } = await client
     .from("events")
-    .update({
-      is_locked: isLocked
-    })
+    .update({ is_locked: isLocked })
     .eq("id", eventId);
 
   if (error) {
     throw new Error("status.hostActionError");
   }
+}
+
+export async function setEventSeason(eventId: string, seasonLabel: string) {
+  const client = getSupabaseClient();
+  const { error } = await client
+    .from("events")
+    .update({ season_label: seasonLabel })
+    .eq("id", eventId);
+
+  if (error) {
+    throw new Error("status.hostActionError");
+  }
+}
+
+export async function isChampionRecorded(eventId: string) {
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("hall_of_fame")
+    .select("id")
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
+}
+
+export async function recordChampion(
+  eventId: string,
+  seasonLabel: string,
+  eventName: string,
+  eventDate: string,
+  championName: string,
+  warband: string,
+  score: number,
+  communityPlayerId?: string
+) {
+  const client = getSupabaseClient();
+  const { error } = await client.from("hall_of_fame").insert({
+    event_id: eventId,
+    season_label: seasonLabel,
+    event_name: eventName,
+    event_date: eventDate,
+    champion_name: championName,
+    warband,
+    score,
+    ...(communityPlayerId ? { community_player_id: communityPlayerId } : {})
+  });
+
+  if (error) {
+    throw new Error("status.hostActionError");
+  }
+}
+
+export async function fetchHallOfFame() {
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("hall_of_fame")
+    .select("*")
+    .order("event_date", { ascending: false });
+
+  if (error) {
+    throw new Error("status.saveError");
+  }
+
+  return (data ?? []) as HallOfFameRecord[];
+}
+
+export async function fetchCommunityStats() {
+  const client = getSupabaseClient();
+  const [eventsResult, playersResult, achievementsResult] = await Promise.all([
+    client.from("events").select("id", { count: "exact", head: true }),
+    client.from("players").select("id", { count: "exact", head: true }),
+    client.from("player_achievements").select("id", { count: "exact", head: true })
+  ]);
+
+  return {
+    totalEvents: eventsResult.count ?? 0,
+    totalPlayers: playersResult.count ?? 0,
+    totalAchievements: achievementsResult.count ?? 0
+  };
+}
+
+export async function fetchAchievementStats() {
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("player_achievements")
+    .select("achievement_id");
+
+  if (error) {
+    throw new Error("status.saveError");
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of (data ?? []) as { achievement_id: string }[]) {
+    counts.set(row.achievement_id, (counts.get(row.achievement_id) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([achievementId, count]) => ({ achievementId, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export async function fetchLatestChampion() {
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("hall_of_fame")
+    .select("*")
+    .order("event_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) return null;
+  return data as HallOfFameRecord | null;
+}
+
+export async function fetchWarbandStats() {
+  const client = getSupabaseClient();
+  const { data, error } = await client.from("players").select("warband");
+
+  if (error) {
+    throw new Error("status.saveError");
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of (data ?? []) as { warband: string }[]) {
+    const w = row.warband.trim();
+    if (w) counts.set(w, (counts.get(w) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([warband, count]) => ({ warband, count }))
+    .sort((a, b) => b.count - a.count);
 }
