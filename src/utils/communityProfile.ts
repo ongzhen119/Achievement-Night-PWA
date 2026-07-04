@@ -1,3 +1,7 @@
+const SELECTED_PLAYER_KEY = "aexern:selected-player-id";
+const LEGACY_PLAYER_ID_KEY = "community:player-id";
+const LEGACY_PROFILE_KEY = "community:profile";
+
 export type CommunityProfile = {
   playerId: string;
   displayName: string;
@@ -5,53 +9,57 @@ export type CommunityProfile = {
   joinedDate: string;
 };
 
-const PLAYER_ID_KEY = "community:player-id";
-const PROFILE_KEY = "community:profile";
-
-export function getCommunityPlayerId(): string | null {
-  return window.localStorage.getItem(PLAYER_ID_KEY);
+export function getSelectedPlayerId() {
+  return window.localStorage.getItem(SELECTED_PLAYER_KEY);
 }
 
-export function getOrCreateCommunityPlayerId(): string {
+export function setSelectedPlayerId(playerId: string) {
+  window.localStorage.setItem(SELECTED_PLAYER_KEY, playerId);
+}
+
+export function clearSelectedPlayerId() {
+  window.localStorage.removeItem(SELECTED_PLAYER_KEY);
+}
+
+// Compatibility for archived, unregistered event pages.
+export function getCommunityPlayerId() {
+  return window.localStorage.getItem(LEGACY_PLAYER_ID_KEY);
+}
+
+export function getOrCreateCommunityPlayerId() {
   const existing = getCommunityPlayerId();
   if (existing) return existing;
-  const newId = crypto.randomUUID();
-  window.localStorage.setItem(PLAYER_ID_KEY, newId);
-  return newId;
+  const playerId = crypto.randomUUID();
+  window.localStorage.setItem(LEGACY_PLAYER_ID_KEY, playerId);
+  return playerId;
 }
 
 export function getCommunityProfile(): CommunityProfile | null {
-  const raw = window.localStorage.getItem(PROFILE_KEY);
-  if (!raw) return null;
+  const value = window.localStorage.getItem(LEGACY_PROFILE_KEY);
+  if (!value) return null;
   try {
-    return JSON.parse(raw) as CommunityProfile;
+    return JSON.parse(value) as CommunityProfile;
   } catch {
     return null;
   }
 }
 
-export function createCommunityProfile(
-  displayName: string,
-  warband: string
-): CommunityProfile {
-  const playerId = getOrCreateCommunityPlayerId();
+export function createCommunityProfile(displayName: string, warband: string) {
   const profile: CommunityProfile = {
-    playerId,
+    playerId: getOrCreateCommunityPlayerId(),
     displayName: displayName.trim(),
     warband: warband.trim(),
     joinedDate: new Date().toISOString()
   };
-  window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  window.localStorage.setItem(LEGACY_PROFILE_KEY, JSON.stringify(profile));
   return profile;
 }
 
 export function updateCommunityProfile(
   updates: Partial<Pick<CommunityProfile, "displayName" | "warband">>
-): void {
+) {
   const current = getCommunityProfile();
-  if (!current) return;
-  window.localStorage.setItem(
-    PROFILE_KEY,
-    JSON.stringify({ ...current, ...updates })
-  );
+  if (current) {
+    window.localStorage.setItem(LEGACY_PROFILE_KEY, JSON.stringify({ ...current, ...updates }));
+  }
 }

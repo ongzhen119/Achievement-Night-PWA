@@ -9,6 +9,8 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Legacy types remain only so archived achievement pages still type-check.
+// No legacy page is registered in the active router.
 export type EventRecord = {
   id: string;
   slug: string;
@@ -69,7 +71,7 @@ export type PlayerAchievementRecord = {
 
 export function getSupabaseClient() {
   if (!supabase) {
-    throw new Error("status.supabaseMissing");
+    throw new Error("companion.error.supabase");
   }
 
   return supabase;
@@ -78,37 +80,10 @@ export function getSupabaseClient() {
 export function subscribeToEventChanges(eventId: string, onChange: () => void) {
   const client = getSupabaseClient();
   const channel = client
-    .channel(`event-${eventId}-${Date.now()}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "events",
-        filter: `id=eq.${eventId}`
-      },
-      onChange
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "players",
-        filter: `event_id=eq.${eventId}`
-      },
-      onChange
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "player_achievements",
-        filter: `event_id=eq.${eventId}`
-      },
-      onChange
-    )
+    .channel(`legacy-event-${eventId}-${Date.now()}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "events", filter: `id=eq.${eventId}` }, onChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: `event_id=eq.${eventId}` }, onChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "player_achievements", filter: `event_id=eq.${eventId}` }, onChange)
     .subscribe();
 
   return () => {

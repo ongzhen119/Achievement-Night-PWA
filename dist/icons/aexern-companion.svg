@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Aexern Companion placeholder icon</title>
+  <description id="description">An original gold A monogram on a dark shield.</description>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2cf78"/>
+      <stop offset="1" stop-color="#b87524"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#17110f"/>
+  <path d="M256 54 422 119v122c0 104-63 179-166 217C153 420 90 345 90 241V119Z" fill="#241a17" stroke="url(#gold)" stroke-width="18"/>
+  <path d="m152 365 83-228h42l83 228h-48l-20-59h-76l-19 59Zm78-101h48l-24-75Z" fill="url(#gold)"/>
+  <circle cx="256" cy="256" r="177" fill="none" stroke="#8b2e27" stroke-width="8" stroke-dasharray="9 18" opacity=".62"/>
+</svg>

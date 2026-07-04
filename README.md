@@ -1,6 +1,8 @@
-# Achievement PWA
+# Aexern Underworlds Companion
 
-Mobile-first React + Vite + TypeScript PWA for casual weekly tabletop events. Players join by event link, enter the host join code, save achievements to Supabase, and view a live ranking. Hosts use a pin-gated page to manage players, reset achievements, lock the event, and screenshot the ranking.
+Mobile-first React, Vite, TypeScript, and Supabase PWA for the small Aexern board game shop community. It records one shared battle after each game, preserves player history, and provides a screenshot-friendly Community Board for WhatsApp.
+
+This is a casual community log, not a tournament engine.
 
 ## Run Locally
 
@@ -10,157 +12,56 @@ npm run dev
 npm run build
 ```
 
-## Supabase Environment
+## Supabase Setup
 
-Create a Supabase project, then copy `.env.example` to `.env` and fill in:
+Copy `.env.example` to `.env` and provide the public project values:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
-Restart `npm run dev` after changing environment variables.
+Run [`docs/supabase-companion-revamp.sql`](docs/supabase-companion-revamp.sql) in the Supabase SQL editor, then restart the development server.
 
-## Table Creation SQL
+The migration is additive. Existing event, achievement, Hall of Fame, and legacy battle rows are not dropped. Legacy battles without two linked players are excluded from the new shared community statistics.
 
-Run this SQL in the Supabase SQL editor.
+### Data storage
 
-```sql
-create extension if not exists pgcrypto;
+- `community_players`: nickname, optional favourite warband, optional joined year.
+- `battle_records`: one physical game, both players, both warbands, format, result, glory scores, date, and memorable note.
+- `localStorage`: selected player ID, language choice, and optional Quick Start progress.
 
-create table if not exists public.events (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  name text not null,
-  event_date date not null,
-  join_code text not null,
-  host_pin text not null,
-  is_locked boolean not null default false,
-  created_at timestamptz not null default now()
-);
+The selected player is device/browser-specific. Clearing browser data requires selecting the player again, but shared profiles and battles remain in Supabase.
 
-create table if not exists public.players (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete cascade,
-  display_name text not null,
-  warband text not null,
-  created_at timestamptz not null default now()
-);
+The MVP uses public read/insert policies and an honour system. It stores no email, phone number, password, or real identity. Do not use it for sensitive data.
 
-create table if not exists public.player_achievements (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete cascade,
-  player_id uuid not null references public.players(id) on delete cascade,
-  achievement_id text not null,
-  created_at timestamptz not null default now(),
-  unique (event_id, player_id, achievement_id)
-);
+## Main Routes
 
-create index if not exists players_event_id_idx
-  on public.players(event_id);
+- `/` — Community Hub and recent battles.
+- `/battles/new` — Log one shared battle.
+- `/battles` — Battle history with a simple player filter.
+- `/players` — Create or select a player.
+- `/players/:playerId` — Player record and battle history.
+- `/community` — Community Board and lightweight Hall of Fame.
+- `/guide` — optional new-player table setup guide.
 
-create index if not exists player_achievements_event_id_idx
-  on public.player_achievements(event_id);
+## What Changed
 
-create index if not exists player_achievements_player_id_idx
-  on public.player_achievements(player_id);
+- “Log Battle” is now the main action.
+- Profiles are shared Supabase rows selected locally without login.
+- Each game updates both players from one battle record.
+- Player records include games, W/L/D, win rate, favourite warband, and total glory.
+- The Community Board includes Most Games, Top Win Rate, Most Glory, Most Recent Winner, and Most Active Player.
+- Branding, install metadata, icon, navigation, and English/Chinese community labels now use Aexern Companion wording.
 
-alter table public.events enable row level security;
-alter table public.players enable row level security;
-alter table public.player_achievements enable row level security;
+## What Was Removed from the Product Flow
 
-create policy "MVP read events"
-  on public.events for select
-  using (true);
+Achievement checklist, achievement ranking, event join/result flow, and host achievement controls are no longer registered routes or navigation items. Their old source and database tables are retained temporarily for safe legacy compatibility, but the active app does not use them.
 
-create policy "MVP update events"
-  on public.events for update
-  using (true)
-  with check (true);
+## WhatsApp Sharing
 
-create policy "MVP read players"
-  on public.players for select
-  using (true);
+Open `/community` after a store session and capture the Community Board. It is formatted as a single mobile card without management controls inside the share area.
 
-create policy "MVP insert players"
-  on public.players for insert
-  with check (true);
+## Recommended Future Upgrade
 
-create policy "MVP delete players"
-  on public.players for delete
-  using (true);
-
-create policy "MVP read achievements"
-  on public.player_achievements for select
-  using (true);
-
-create policy "MVP insert achievements"
-  on public.player_achievements for insert
-  with check (true);
-
-create policy "MVP update achievements"
-  on public.player_achievements for update
-  using (true)
-  with check (true);
-
-create policy "MVP delete achievements"
-  on public.player_achievements for delete
-  using (true);
-```
-
-These MVP policies are intentionally permissive because the app does not include full login yet. The host pin is a lightweight UI gate, not a secure admin system. Tighten RLS before using this for anything sensitive.
-
-For live ranking updates, enable Realtime for `players`, `player_achievements`, and `events` in Supabase.
-
-## Create a New Weekly Event
-
-Insert one row into `events` for each weekly event:
-
-```sql
-insert into public.events (slug, name, event_date, join_code, host_pin)
-values (
-  'aexern-achievement-2026-06-13',
-  'Aexern Achievement',
-  '2026-06-13',
-  'EMBER13',
-  'HOST-1337'
-);
-```
-
-Players use `/event/aexern-achievement-2026-06-13`.
-
-Hosts use `/event/aexern-achievement-2026-06-13/host`.
-
-## Edit Checklist Wording
-
-Edit achievement grouping and IDs in:
-
-```txt
-src/data/achievements.ts
-```
-
-Edit English and Simplified Chinese visible wording in:
-
-```txt
-src/i18n/translations.ts
-```
-
-The checklist score is calculated from checked rows in `player_achievements`, not from local storage.
-
-## Share in WhatsApp
-
-After deploying the PWA, send the event URL to the group chat:
-
-```txt
-https://your-domain.example/event/aexern-achievement-2026-06-13
-```
-
-Include the join code in the message. Example:
-
-```txt
-Achievement is open.
-Link: https://your-domain.example/event/aexern-achievement-2026-06-13
-Join code: EMBER13
-```
-
-After the event, open the ranking page or host ranking preview and screenshot it for WhatsApp.
+Add Supabase anonymous authentication only when the community needs secure editing or deletion. Other deferred work includes host moderation, battle corrections, CSV export, session management, and realtime refresh. ELO, league ranking, tournament pairing, and full accounts remain intentionally out of scope.

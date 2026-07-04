@@ -1,8 +1,7 @@
 import { RotateCcw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import AppHeader from "../components/AppHeader";
 import BottomNav from "../components/BottomNav";
-import LanguageToggle from "../components/LanguageToggle";
 import QuickStartStepCard from "../components/QuickStartStepCard";
 import {
   getQuickStartItemKey,
@@ -37,7 +36,7 @@ function isStepComplete(step: QuickStartStep, completedItemSet: Set<string>) {
 }
 
 export default function QuickStartGuidePage() {
-  const { slug = "" } = useParams();
+  const slug = "community-guide";
   const { language, t } = useLanguage();
   const [completedItemKeys, setCompletedItemKeys] = useState<string[]>(() =>
     getQuickStartProgress(slug)
@@ -98,10 +97,7 @@ export default function QuickStartGuidePage() {
 
   return (
     <main className="app-shell page-with-nav quick-guide-page">
-      <div className="top-bar">
-        <p className="eyebrow">{t("app.name")}</p>
-        <LanguageToggle />
-      </div>
+      <AppHeader />
 
       <section className="panel quick-guide-hero">
         <p className="eyebrow">{t("guide.subtitle")}</p>
@@ -167,7 +163,7 @@ export default function QuickStartGuidePage() {
         })}
       </div>
 
-      <BottomNav active="guide" slug={slug} />
+      <BottomNav />
     </main>
   );
 }

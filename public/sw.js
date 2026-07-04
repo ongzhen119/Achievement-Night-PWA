@@ -1,5 +1,5 @@
-const CACHE_NAME = "achievement-shell-v1";
-const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/achievement.svg"];
+const CACHE_NAME = "aexern-companion-shell-v2";
+const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/aexern-companion.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

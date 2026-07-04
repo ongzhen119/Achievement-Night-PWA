@@ -1,38 +1,30 @@
-import { BookOpenCheck, CheckSquare, ScrollText, Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Home, ScrollText, Trophy, Users } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { useLanguage } from "../i18n/useLanguage";
 
-type BottomNavProps = {
-  slug: string;
-  active: "checklist" | "guide" | "ranking" | "result";
-};
-
-export default function BottomNav({ slug, active }: BottomNavProps) {
+export default function BottomNav(_legacyProps?: { slug?: string; active?: string }) {
   const { t } = useLanguage();
   const navItems = [
     {
-      id: "checklist" as const,
-      label: t("nav.checklist"),
-      to: `/event/${slug}/checklist`,
-      icon: CheckSquare
+      label: t("companion.nav.home"),
+      to: "/",
+      icon: Home,
+      end: true
     },
     {
-      id: "guide" as const,
-      label: t("nav.quickStart"),
-      to: `/event/${slug}/quick-start`,
-      icon: BookOpenCheck
-    },
-    {
-      id: "ranking" as const,
-      label: t("nav.ranking"),
-      to: `/event/${slug}/ranking`,
-      icon: Trophy
-    },
-    {
-      id: "result" as const,
-      label: t("nav.result"),
-      to: `/event/${slug}/result`,
+      label: t("companion.nav.battles"),
+      to: "/battles",
       icon: ScrollText
+    },
+    {
+      label: t("companion.nav.players"),
+      to: "/players",
+      icon: Users
+    },
+    {
+      label: t("companion.nav.community"),
+      to: "/community",
+      icon: Trophy
     }
   ];
 
@@ -42,14 +34,15 @@ export default function BottomNav({ slug, active }: BottomNavProps) {
         const Icon = item.icon;
 
         return (
-          <Link
-            className={active === item.id ? "active" : ""}
-            key={item.id}
+          <NavLink
+            className={({ isActive }) => (isActive ? "active" : "")}
+            end={item.end}
+            key={item.to}
             to={item.to}
           >
             <Icon size={18} aria-hidden="true" />
             <span>{item.label}</span>
-          </Link>
+          </NavLink>
         );
       })}
     </nav>

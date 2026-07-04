@@ -1,14 +1,14 @@
 {
-  "name": "Achievement",
-  "short_name": "Achievement",
-  "description": "A mobile-first achievement tracker for casual tabletop events.",
+  "name": "Aexern Underworlds Companion",
+  "short_name": "Aexern",
+  "description": "A mobile-first battle log and community board for Aexern Underworlds sessions.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#171411",
   "theme_color": "#171411",
   "icons": [
     {
-      "src": "/icons/achievement.svg",
+      "src": "/icons/aexern-companion.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

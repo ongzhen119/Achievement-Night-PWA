@@ -1,120 +1,101 @@
-import { useEffect, useState } from "react";
-import { Crown, Shield } from "lucide-react";
+import { BookOpenCheck, Swords, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import LanguageToggle from "../components/LanguageToggle";
+import AppHeader from "../components/AppHeader";
+import BattleCard from "../components/BattleCard";
+import BottomNav from "../components/BottomNav";
 import { useLanguage } from "../i18n/useLanguage";
-import { formatEventDate } from "../utils/date";
-import { fetchCommunityStats, fetchLatestChampion } from "../utils/eventData";
-import { HallOfFameRecord } from "../utils/supabase";
-
-type CommunityStats = Awaited<ReturnType<typeof fetchCommunityStats>>;
+import { getCommunityTotals } from "../utils/communityData";
+import { getSelectedPlayerId } from "../utils/communityProfile";
+import { useCommunityData } from "../utils/useCommunityData";
 
 export default function HomePage() {
-  const { t, language } = useLanguage();
-  const [champion, setChampion] = useState<HallOfFameRecord | null>(null);
-  const [stats, setStats] = useState<CommunityStats | null>(null);
-
-  useEffect(() => {
-    Promise.all([fetchLatestChampion(), fetchCommunityStats()])
-      .then(([c, s]) => {
-        setChampion(c);
-        setStats(s);
-      })
-      .catch(() => {});
-  }, []);
+  const { t } = useLanguage();
+  const { data, loading, errorKey } = useCommunityData();
+  const selectedPlayerId = getSelectedPlayerId();
+  const selectedPlayer = data?.players.find((player) => player.id === selectedPlayerId);
+  const totals = data ? getCommunityTotals(data.players, data.battles) : null;
 
   return (
-    <main className="app-shell event-shell">
-      <div className="top-bar">
-        <p className="eyebrow">Aexern Underworlds</p>
-        <LanguageToggle />
-      </div>
+    <main className="app-shell page-with-nav">
+      <AppHeader />
 
-      <section className="panel hero-panel">
-        <p className="eyebrow">{t("home.communityLabel")}</p>
-        <h1 className="home-wordmark">
-          Aexern
-          <br />
-          Underworlds
-        </h1>
-        <p className="hero-copy">{t("home.tagline")}</p>
-        <div className="home-cta-row">
-          <Link className="primary-button" to="/hall-of-fame">
-            {t("home.hofCTA")}
-          </Link>
-          <Link className="secondary-button" to="/profile">
-            {t("home.profileCTA")}
-          </Link>
+      <section className="community-hero panel">
+        <div className="shop-logo-placeholder" aria-label="Aexern board game shop logo placeholder">
+          <img src="/icons/logo.png" alt="Aexern" width='100'/>
+          {/* <small>{t("companion.home.logoPlaceholder")}</small> */}
+        </div>
+        <div>
+          <p className="eyebrow">{t("companion.home.communityLabel")}</p>
+          <h1>{t("companion.home.heading")}</h1>
+          <p className="hero-copy">{t("companion.home.subtitle")}</p>
+        </div>
+        <Link className="primary-button main-cta" to="/battles/new">
+          <Swords size={22} aria-hidden="true" />
+          {t("companion.home.logBattle")}
+        </Link>
+        <div className="current-player-line">
+          <span>{t("companion.home.playingAs")}</span>
+          {selectedPlayer ? (
+            <Link to={`/players/${selectedPlayer.id}`}>{selectedPlayer.nickname}</Link>
+          ) : (
+            <Link to="/players">{t("companion.home.selectPlayer")}</Link>
+          )}
         </div>
       </section>
 
-      {champion ? (
-        <section className="panel">
-          <p className="eyebrow">
-            <Crown
-              size={13}
-              style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }}
-              aria-hidden="true"
-            />
-            {t("home.reigningChampion")}
-          </p>
-          <div className="home-champion-card">
-            <span className="home-champion-name">{champion.champion_name}</span>
-            <div className="home-champion-warband">
-              <Shield size={14} aria-hidden="true" />
-              {champion.warband}
+      {loading ? <p className="status-line">{t("common.loading")}</p> : null}
+      {errorKey ? <p className="error-line">{t(errorKey)}</p> : null}
+
+      {totals ? (
+        <section className="panel share-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{t("companion.home.snapshot")}</p>
+              <h2>{t("companion.home.communityStats")}</h2>
             </div>
-            <div className="home-champion-meta">
-              <span>{champion.season_label}</span>
-              <span>{champion.event_name}</span>
-              <span>{champion.score} pts</span>
-              <span>{formatEventDate(champion.event_date, language)}</span>
-            </div>
+            <Users size={22} aria-hidden="true" />
+          </div>
+          <div className="stats-grid three">
+            <div className="stat-tile"><strong>{totals.players}</strong><span>{t("companion.stats.players")}</span></div>
+            <div className="stat-tile"><strong>{totals.battles}</strong><span>{t("companion.stats.battles")}</span></div>
+            <div className="stat-tile"><strong>{totals.glory}</strong><span>{t("companion.stats.glory")}</span></div>
           </div>
         </section>
       ) : null}
 
-      {stats ? (
+      {data ? (
         <section className="panel">
-          <p className="eyebrow">{t("home.communityStats")}</p>
-          <div className="home-stats-row">
-            <div className="home-stat">
-              <span className="home-stat-num">{stats.totalEvents}</span>
-              <span className="home-stat-label">{t("stats.totalEvents")}</span>
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{t("companion.home.recentLabel")}</p>
+              <h2>{t("companion.home.recentBattles")}</h2>
             </div>
-            <div className="home-stat">
-              <span className="home-stat-num">{stats.totalPlayers}</span>
-              <span className="home-stat-label">{t("stats.totalPlayers")}</span>
-            </div>
-            <div className="home-stat">
-              <span className="home-stat-num">{stats.totalAchievements}</span>
-              <span className="home-stat-label">{t("stats.totalAchievements")}</span>
-            </div>
+            <Link to="/battles">{t("companion.home.viewAll")}</Link>
           </div>
+          {data.battles.length ? (
+            <div className="card-list">
+              {data.battles.slice(0, 5).map((battle) => (
+                <BattleCard battle={battle} key={battle.id} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <Swords size={28} aria-hidden="true" />
+              <p>{t("companion.home.noBattles")}</p>
+            </div>
+          )}
         </section>
       ) : null}
 
-      <section className="panel">
-        <p className="eyebrow">{t("home.exploreLabel")}</p>
-        <div className="global-links" style={{ marginTop: 12 }}>
-          <Link className="secondary-button" to="/profile">
-            {t("nav.profile")}
-          </Link>
-          <Link className="secondary-button" to="/hall-of-fame">
-            {t("nav.hallOfFame")}
-          </Link>
-          <Link className="secondary-button" to="/stats">
-            {t("nav.stats")}
-          </Link>
-        </div>
-      </section>
+      <Link className="panel guide-link" to="/guide">
+        <BookOpenCheck size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("companion.home.guide")}</strong>
+          <small>{t("companion.home.guideHelper")}</small>
+        </span>
+      </Link>
 
-      <section className="panel">
-        <p className="eyebrow">{t("home.joinHeading")}</p>
-        <p className="hero-copy" style={{ marginTop: 8 }}>
-          {t("home.joinBody")}
-        </p>
-      </section>
+      <BottomNav />
     </main>
   );
 }

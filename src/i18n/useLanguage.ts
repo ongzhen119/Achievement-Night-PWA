@@ -8,7 +8,8 @@ import {
 } from "react";
 import { Language, translations, TranslationKey } from "./translations";
 
-const LANGUAGE_STORAGE_KEY = "achievement-language";
+const LANGUAGE_STORAGE_KEY = "aexern-language";
+const LEGACY_LANGUAGE_STORAGE_KEY = "achievement-language";
 
 type LanguageContextValue = {
   language: Language;
@@ -23,7 +24,9 @@ function readInitialLanguage(): Language {
     return "en";
   }
 
-  const cachedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  const cachedLanguage =
+    window.localStorage.getItem(LANGUAGE_STORAGE_KEY) ??
+    window.localStorage.getItem(LEGACY_LANGUAGE_STORAGE_KEY);
   return cachedLanguage === "zh" ? "zh" : "en";
 }
 
