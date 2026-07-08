@@ -95,6 +95,14 @@ export default function HomePage() {
         </span>
       </Link>
 
+      <Link className="panel guide-link" to="/card-help">
+        <BookOpenCheck size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("cardHelp.heading")}</strong>
+          <small>{t("cardHelp.subtitle")}</small>
+        </span>
+      </Link>
+
       <BottomNav />
     </main>
   );

@@ -1,4 +1,4 @@
-import { Home, ScrollText, Trophy, Users } from "lucide-react";
+import { CalendarDays, Home, ScrollText, Trophy, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useLanguage } from "../i18n/useLanguage";
 
@@ -15,6 +15,11 @@ export default function BottomNav(_legacyProps?: { slug?: string; active?: strin
       label: t("companion.nav.battles"),
       to: "/battles",
       icon: ScrollText
+    },
+    {
+      label: t("companion.nav.events"),
+      to: "/host",
+      icon: CalendarDays
     },
     {
       label: t("companion.nav.players"),
