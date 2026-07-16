@@ -36,6 +36,17 @@ export default function LogBattlePage() {
     () => data?.players.filter((player) => player.id !== playerId) ?? [],
     [data, playerId]
   );
+  const warbandOptions = useMemo(() => {
+    const names = new Set<string>();
+    for (const player of data?.players ?? []) {
+      if (player.favouriteWarband) names.add(player.favouriteWarband);
+    }
+    for (const battle of data?.battles ?? []) {
+      names.add(battle.playerWarband);
+      names.add(battle.opponentWarband);
+    }
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }, [data]);
 
   useEffect(() => {
     if (selectedPlayer && !playerWarband) {
@@ -141,13 +152,16 @@ export default function LogBattlePage() {
           </section>
 
           <section className="panel form-panel two-column-fields">
+            <datalist id="warband-options">
+              {warbandOptions.map((name) => <option key={name} value={name} />)}
+            </datalist>
             <label>
               <span>{t("companion.log.playerWarband")}</span>
-              <input maxLength={80} onChange={(event) => setPlayerWarband(event.target.value)} required value={playerWarband} />
+              <input list="warband-options" maxLength={80} onChange={(event) => setPlayerWarband(event.target.value)} required value={playerWarband} />
             </label>
             <label>
               <span>{t("companion.log.opponentWarband")}</span>
-              <input maxLength={80} onChange={(event) => setOpponentWarband(event.target.value)} required value={opponentWarband} />
+              <input list="warband-options" maxLength={80} onChange={(event) => setOpponentWarband(event.target.value)} required value={opponentWarband} />
             </label>
           </section>
 
