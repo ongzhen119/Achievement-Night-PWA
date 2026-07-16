@@ -44,6 +44,7 @@ The MVP uses public read/insert policies and an honour system. It stores no emai
 - `/players/:playerId` — Player record and battle history.
 - `/community` — Community Board and lightweight Hall of Fame.
 - `/guide` — optional new-player table setup guide.
+- `/playmat` — Digital Playmat: host or join a live room and play with digital cards (see [`docs/DIGITAL_PLAYMAT_SETUP.md`](docs/DIGITAL_PLAYMAT_SETUP.md)).
 
 ## What Changed
 

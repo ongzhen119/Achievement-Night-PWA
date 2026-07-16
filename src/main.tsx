@@ -11,6 +11,10 @@ import HostEventBoardPage from "./pages/HostEventBoardPage";
 import LogBattlePage from "./pages/LogBattlePage";
 import PlayerProfilePage from "./pages/PlayerProfilePage";
 import PlayersPage from "./pages/PlayersPage";
+import PlaymatDeckEditorPage from "./pages/PlaymatDeckEditorPage";
+import PlaymatDecksPage from "./pages/PlaymatDecksPage";
+import PlaymatLobbyPage from "./pages/PlaymatLobbyPage";
+import PlaymatRoomPage from "./pages/PlaymatRoomPage";
 import QuickStartGuidePage from "./pages/QuickStartGuidePage";
 import { registerServiceWorker } from "./utils/registerServiceWorker";
 import "./styles.css";
@@ -29,6 +33,10 @@ function App() {
           <Route path="/host" element={<HostEventBoardPage />} />
           <Route path="/host/card-help" element={<HostCardHelpPage />} />
           <Route path="/card-help" element={<CardHelpPage />} />
+          <Route path="/playmat" element={<PlaymatLobbyPage />} />
+          <Route path="/playmat/decks" element={<PlaymatDecksPage />} />
+          <Route path="/playmat/decks/:deckId" element={<PlaymatDeckEditorPage />} />
+          <Route path="/playmat/:code" element={<PlaymatRoomPage />} />
           <Route path="/guide" element={<QuickStartGuidePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
