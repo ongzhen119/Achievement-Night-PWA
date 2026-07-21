@@ -87,6 +87,14 @@ export default function HomePage() {
         </section>
       ) : null}
 
+      <Link className="panel guide-link playmat-entry" to="/playmat">
+        <Swords size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("playmat.homeEntryTitle")}</strong>
+          <small>{t("playmat.homeEntrySubtitle")}</small>
+        </span>
+      </Link>
+
       <Link className="panel guide-link" to="/guide">
         <BookOpenCheck size={24} aria-hidden="true" />
         <span>

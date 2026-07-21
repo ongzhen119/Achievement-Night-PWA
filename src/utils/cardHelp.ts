@@ -8,6 +8,7 @@ export type CardHelpFormat = (typeof CARD_HELP_FORMATS)[number];
 
 export type CardHelpEntry = {
   id: string;
+  card_uid: string | null;
   card_name: string;
   chinese_summary: string;
   timing: string;
@@ -21,8 +22,9 @@ export type CardHelpEntry = {
   updated_at: string;
 };
 
-export type CardHelpPayload = Omit<CardHelpEntry, "id" | "created_at" | "updated_at"> & {
+export type CardHelpPayload = Omit<CardHelpEntry, "id" | "created_at" | "updated_at" | "card_uid"> & {
   id?: string;
+  card_uid?: string | null;
 };
 
 export function filterCardHelpEntries(entries: CardHelpEntry[], query: string, tag: string) {
@@ -54,6 +56,25 @@ export async function fetchCardHelpEntries(hostPin?: string) {
   }
 
   return (data ?? []) as CardHelpEntry[];
+}
+
+// AI Card Coach: public entries keyed by card_uid, fetched once per session
+// and cached in-memory (mirrors the "generate once, cache" design in
+// docs/feature_AI_Card_Coach.md — the actual generation happens offline via
+// scripts/generate-card-coach.mjs, this just reads the cached rows).
+let coachMapPromise: Promise<Map<string, CardHelpEntry>> | null = null;
+
+export function fetchCardCoachMap() {
+  if (!coachMapPromise) {
+    coachMapPromise = fetchCardHelpEntries().then((entries) => {
+      const map = new Map<string, CardHelpEntry>();
+      for (const entry of entries) {
+        if (entry.card_uid) map.set(entry.card_uid, entry);
+      }
+      return map;
+    });
+  }
+  return coachMapPromise;
 }
 
 export async function saveCardHelpEntry(hostPin: string, entry: CardHelpPayload) {
