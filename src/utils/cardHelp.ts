@@ -1,6 +1,6 @@
-import { getSupabaseClient } from "./supabase";
+﻿import { getSupabaseClient } from "./supabase";
 
-export const CARD_HELP_TAGS = ["攻击卡", "防守卡", "得分卡", "陷阱卡", "反应卡"] as const;
+export const CARD_HELP_TAGS = ["攻击卡", "防守卡", "得分卡", "装备卡", "反应卡"] as const;
 export const CARD_HELP_FORMATS = ["Unknown", "Rivals", "Nemesis", "Both"] as const;
 
 export type CardHelpTag = (typeof CARD_HELP_TAGS)[number];

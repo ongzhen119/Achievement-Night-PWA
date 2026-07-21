@@ -43,6 +43,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Link className="panel guide-link playmat-entry" to="/playmat">
+        <Swords size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("playmat.homeEntryTitle")}</strong>
+          <small>{t("playmat.homeEntrySubtitle")}</small>
+        </span>
+      </Link>
+
+      <Link className="panel guide-link" to="/guide">
+        <BookOpenCheck size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("companion.home.guide")}</strong>
+          <small>{t("companion.home.guideHelper")}</small>
+        </span>
+      </Link>
+
+      <Link className="panel guide-link" to="/card-help">
+        <BookOpenCheck size={24} aria-hidden="true" />
+        <span>
+          <strong>{t("cardHelp.heading")}</strong>
+          <small>{t("cardHelp.subtitle")}</small>
+        </span>
+      </Link>
+
       {loading ? <p className="status-line">{t("common.loading")}</p> : null}
       {errorKey ? <p className="error-line">{t(errorKey)}</p> : null}
 
