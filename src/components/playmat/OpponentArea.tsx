@@ -1,6 +1,7 @@
-import { Crown, Layers, ScrollText, Trophy } from "lucide-react";
+import { CSSProperties } from "react";
+import { Crown, Layers, ScrollText, Swords, Trophy } from "lucide-react";
 import { getCatalogCard } from "../../data/playmat/catalog";
-import { getWarband } from "../../data/playmat/warbands";
+import { getWarband, warbandAccent } from "../../data/playmat/warbands";
 import { useLanguage } from "../../i18n/useLanguage";
 import {
   PlaymatCardZone,
@@ -18,7 +19,7 @@ interface OpponentAreaProps {
   onFighterPress: (ownerId: string, fighterId: string) => void;
 }
 
-/** Compact read-only view of another player's area. */
+/** The enemy territory: a read-only battle line for another player's warband. */
 export default function OpponentArea({
   player,
   state,
@@ -28,32 +29,43 @@ export default function OpponentArea({
 }: OpponentAreaProps) {
   const { t } = useLanguage();
   const warband = getWarband(player.warband_id);
+  const accentStyle = {
+    "--wb": warbandAccent(player.warband_id)
+  } as CSSProperties;
 
   if (!state || !warband) {
     return (
-      <section className="opponent-area panel-flat">
-        <header className="opponent-head">
-          <strong>{player.name}</strong>
+      <section className="warband-field enemy" style={accentStyle}>
+        <header className="field-banner">
+          <span className="field-side">{t("playmat.enemyLabel")}</span>
+          <strong className="field-name">{player.name}</strong>
           <span className="playmat-chip">{t("playmat.waitingSetup")}</span>
         </header>
       </section>
     );
   }
 
+  const fightersLeft = warband.fighters.filter(
+    (fighter) => !state.fighters[fighter.id]?.out
+  ).length;
+
   return (
-    <section className="opponent-area panel-flat">
-      <header className="opponent-head">
-        <strong>
-          {player.is_host ? <Crown size={14} aria-hidden="true" /> : null} {player.name}
+    <section className="warband-field enemy" style={accentStyle}>
+      <header className="field-banner">
+        <span className="field-side">{t("playmat.enemyLabel")}</span>
+        <strong className="field-name">
+          {player.is_host ? <Crown size={13} aria-hidden="true" /> : null}
+          {player.name}
         </strong>
-        <span className="opponent-deck-name">{warband.name}</span>
-        <span className="playmat-chip glory">
-          <Trophy size={12} aria-hidden="true" /> {state.gloryEarned}
-          {state.glorySpent > 0 ? ` (−${state.glorySpent})` : ""}
+        <span className="field-warband">{warband.name}</span>
+        <span className="field-glory">
+          <Trophy size={14} aria-hidden="true" />
+          <b>{state.gloryEarned}</b>
+          {state.glorySpent > 0 ? <small>−{state.glorySpent}</small> : null}
         </span>
       </header>
 
-      <div className="opponent-fighters">
+      <div className="field-fighters">
         {warband.fighters.map((fighter) => {
           const fighterState = state.fighters[fighter.id];
           if (!fighterState) {
@@ -73,9 +85,9 @@ export default function OpponentArea({
         })}
       </div>
 
-      {state.played.length ? (
-        <div className="opponent-played">
-          {state.played.map((cardId) => {
+      <div className="field-played" aria-label={t("playmat.zone.played")}>
+        {state.played.length ? (
+          state.played.map((cardId) => {
             const card = getCatalogCard(cardId);
             if (!card) {
               return null;
@@ -89,38 +101,46 @@ export default function OpponentArea({
                 size="sm"
               />
             );
-          })}
-        </div>
-      ) : null}
+          })
+        ) : (
+          <span className="field-played-empty">{t("playmat.noBoardYet")}</span>
+        )}
+      </div>
 
-      <div className="opponent-counters">
-        <span className="playmat-chip">
-          <Layers size={12} aria-hidden="true" /> {t("playmat.handShort")} {state.hand.length}
+      <div className="field-counters">
+        <span className="field-stat">
+          <Swords size={12} aria-hidden="true" />
+          {fightersLeft}/{warband.fighters.length}
         </span>
-        <span className="playmat-chip">
+        <span className="field-stat">
+          <Layers size={12} aria-hidden="true" />
+          {t("playmat.handShort")} {state.hand.length}
+        </span>
+        <span className="field-stat">
           {t("playmat.powerDeckShort")} {state.powerDeck.length}
         </span>
-        <span className="playmat-chip">
-          <ScrollText size={12} aria-hidden="true" /> {t("playmat.objectiveHandShort")}{" "}
-          {state.objectiveHand.length}
+        <span className="field-stat">
+          <ScrollText size={12} aria-hidden="true" />
+          {t("playmat.objectiveHandShort")} {state.objectiveHand.length}
         </span>
         <button
-          className="playmat-chip tappable"
+          className="field-stat tappable"
           onClick={() => onOpenPile(player.id, "discard")}
           type="button"
         >
           {t("playmat.discardShort")} {state.discard.length}
         </button>
         <button
-          className="playmat-chip tappable"
+          className="field-stat tappable gold"
           onClick={() => onOpenPile(player.id, "scored")}
           type="button"
         >
+          <Trophy size={12} aria-hidden="true" />
           {t("playmat.scoredShort")} {state.scored.length}
         </button>
         {state.objectiveDiscard.length ? (
           <button
-            className="playmat-chip tappable"
+            className="field-stat tappable"
             onClick={() => onOpenPile(player.id, "objectiveDiscard")}
             type="button"
           >

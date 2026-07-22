@@ -17,7 +17,7 @@ interface FighterTileProps {
   onDrop?: (event: DragEvent<HTMLButtonElement>) => void;
 }
 
-/** A fighter card with damage, inspired and out-of-action markers. */
+/** A fighter card with a health bar, damage, inspired and out-of-action markers. */
 export default function FighterTile({
   warbandId,
   fighter,
@@ -40,10 +40,15 @@ export default function FighterTile({
   }, [source]);
 
   const woundedOut = state.out;
+  const remaining = Math.max(0, fighter.wounds - state.damage);
+  const healthPct = fighter.wounds > 0 ? (remaining / fighter.wounds) * 100 : 0;
+  // Green when healthy, amber when bloodied, oxblood-red when near death.
+  const healthTone =
+    healthPct > 66 ? "healthy" : healthPct > 33 ? "hurt" : "critical";
 
   return (
     <button
-      aria-label={fighter.name}
+      aria-label={`${fighter.name} — ${remaining}/${fighter.wounds}`}
       className={[
         "fighter-tile",
         compact ? "compact" : "",
@@ -81,22 +86,32 @@ export default function FighterTile({
       ) : null}
 
       {state.inspired ? (
-        <span className="fighter-inspired-mark">
-          <Flame size={12} aria-hidden="true" />
+        <span className="fighter-inspired-mark" aria-hidden="true">
+          <Flame size={12} />
         </span>
       ) : null}
 
       {state.upgrades.length ? (
-        <span className="fighter-upgrade-count">
-          +{state.upgrades.length}
-        </span>
+        <span className="fighter-upgrade-count">+{state.upgrades.length}</span>
       ) : null}
 
       {woundedOut ? (
         <span className="fighter-out-overlay">
-          <Skull size={compact ? 16 : 22} aria-hidden="true" />
+          <Skull size={compact ? 18 : 26} aria-hidden="true" />
         </span>
       ) : null}
+
+      {/* Name ribbon + health bar: fighter status readable at a glance. */}
+      <span className="fighter-ribbon">
+        <span className="fighter-name">{fighter.name}</span>
+        <span
+          aria-hidden="true"
+          className={`fighter-wounds ${healthTone}`}
+          title={`${remaining}/${fighter.wounds}`}
+        >
+          <span className="wound-fill" style={{ width: `${healthPct}%` }} />
+        </span>
+      </span>
     </button>
   );
 }

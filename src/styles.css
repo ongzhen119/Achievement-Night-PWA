@@ -2601,40 +2601,158 @@ label {
   font-size: 0.85rem;
 }
 
+/* ==========================================================================
+   DIGITAL PLAYMAT — THE CONTESTED BOARD
+   A top-down tactical skirmish: two warbands, one contested field of glory.
+   ========================================================================== */
+
 .playmat-shell {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  max-width: 1080px;
+  max-width: 1180px;
   margin: 0 auto;
   overflow: hidden;
+  /* Neutral accent fallback so fighter tiles rendered outside a warband
+     field (e.g. the fighter detail modal) still resolve var(--wb). */
+  --wb: var(--parchment);
+  --wb-mine: var(--gilded);
+  --wb-enemy: var(--oxblood);
 }
 
-.playmat-header {
+/* ---- Battle bar: room code · round runes · phase ---------------------- */
+
+.battle-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--line);
-  background: rgba(23, 20, 17, 0.9);
+  background:
+    linear-gradient(180deg, rgba(240, 196, 80, 0.06), transparent 60%),
+    rgba(18, 15, 13, 0.94);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
 }
 
-.playmat-round {
+.code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid rgba(212, 189, 140, 0.3);
+  border-radius: 8px;
+  background: rgba(31, 27, 24, 0.9);
+  position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* The label is a nicety for wide screens; on phones the code stands alone. */
+.code-chip-label {
+  display: none;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.code-chip-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: 0.16em;
+  color: var(--gilded);
+}
+
+.code-chip-copied {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--gold);
+  color: #241708;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.round-track {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.round-rune {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 4px;
+  border: 1px solid rgba(212, 189, 140, 0.24);
+  border-radius: 6px;
+  background: rgba(31, 27, 24, 0.7);
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 0.92rem;
-  color: #f3dfb8;
+  color: var(--muted);
+  transition: transform 0.2s ease;
 }
 
-.playmat-header-buttons {
+.round-rune.past {
+  color: #f3dfb8;
+  border-color: rgba(212, 189, 140, 0.4);
+  background: rgba(105, 38, 34, 0.32);
+}
+
+.round-rune.active {
+  color: #241708;
+  border-color: var(--gilded);
+  background: linear-gradient(160deg, var(--gilded), var(--gold));
+  box-shadow: 0 0 16px rgba(240, 196, 80, 0.5);
+  transform: translateY(-1px) scale(1.08);
+  animation: rune-ignite 2.6s ease-in-out infinite;
+}
+
+@keyframes rune-ignite {
+  0%, 100% { box-shadow: 0 0 12px rgba(240, 196, 80, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(240, 196, 80, 0.7); }
+}
+
+.phase-pill {
+  margin-left: 4px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 189, 140, 0.3);
+  background: rgba(31, 27, 24, 0.8);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f3dfb8;
+  white-space: nowrap;
+}
+
+.phase-pill.end {
+  color: var(--ember);
+  border-color: rgba(229, 106, 46, 0.5);
+  background: rgba(105, 38, 34, 0.34);
+}
+
+.battle-bar-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .playmat-error {
   margin: 6px 12px 0;
 }
 
+/* Retained for lobby + "setting up" states outside the live board. */
 .playmat-chip {
   display: inline-flex;
   align-items: center;
@@ -2658,206 +2776,546 @@ label {
   cursor: pointer;
 }
 
-.playmat-scroll {
-  flex: 1;
-  overflow-y: auto;
+/* ---- The Battle Standard: contested glory ---------------------------- */
+
+/* Mobile-first: two banners abreast, contested tug spanning the full width
+   beneath them. Desktop threads the tug between the banners (see 860px). */
+.battle-standard {
   display: grid;
-  gap: 10px;
-  align-content: start;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "enemy mine"
+    "tug tug";
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 50% -20%, rgba(240, 196, 80, 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(43, 36, 31, 0.7), rgba(23, 20, 17, 0.82));
+}
+
+.standard-banner.enemy {
+  grid-area: enemy;
+}
+
+.standard-banner.mine {
+  grid-area: mine;
+}
+
+.glory-tug {
+  grid-area: tug;
+}
+
+.standard-banner {
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--wb) 45%, var(--line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wb) 20%, transparent), transparent 70%),
+    linear-gradient(150deg, rgba(43, 36, 31, 0.95), rgba(23, 20, 17, 0.96));
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--wb) 14%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.standard-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--wb);
+}
+
+.standard-banner.enemy {
+  text-align: left;
+  padding-left: 16px;
+}
+
+.standard-banner.enemy::before {
+  left: 0;
+}
+
+.standard-banner.mine {
+  text-align: right;
+  padding-right: 16px;
+  justify-items: end;
+}
+
+.standard-banner.mine::before {
+  right: 0;
+}
+
+.banner-side {
+  font-size: 0.56rem;
+  font-weight: 850;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wb) 60%, var(--muted));
+}
+
+.banner-name {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #f5efe2;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+  /* Break between words, never mid-word (overrides the global anywhere-wrap). */
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.banner-glory {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.standard-banner.mine .banner-glory {
+  flex-direction: row-reverse;
+}
+
+.banner-glory b {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #f3dfb8;
+}
+
+.banner-glory.leading {
+  color: var(--gilded);
+}
+
+.banner-glory.leading b {
+  color: var(--gilded);
+  text-shadow: 0 0 16px rgba(240, 196, 80, 0.55);
+}
+
+.banner-glory b {
+  animation: glory-pop 0.45s ease;
+}
+
+@keyframes glory-pop {
+  0% { transform: scale(1.5); color: var(--gilded); }
+  100% { transform: scale(1); }
+}
+
+/* The tug-of-war: two warbands pushing glory toward the centre. */
+.glory-tug {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.tug-track {
+  display: flex;
+  align-items: stretch;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: rgba(10, 8, 6, 0.7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.tug-fill {
+  flex-basis: 0;
+  min-width: 3px;
+  transition: flex-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tug-fill.enemy {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wb) 55%, #0a0806), var(--wb));
+}
+
+.tug-fill.mine {
+  background: linear-gradient(90deg, var(--wb), color-mix(in srgb, var(--wb) 55%, #0a0806));
+}
+
+.lead-enemy .tug-fill.enemy,
+.lead-mine .tug-fill.mine {
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--wb) 70%, transparent);
+  animation: tug-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes tug-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.28); }
+}
+
+.tug-seam {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  margin: -3px 0;
+  color: var(--gilded);
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+  z-index: 1;
+}
+
+/* ---- Battlefield: enemy line · front line · your line ---------------- */
+
+.battlefield {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   padding: 10px 12px 14px;
 }
 
-.playmat-zone-title {
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.opponent-area {
+.warband-field {
+  display: grid;
+  gap: 8px;
   padding: 10px 12px;
-  display: grid;
-  gap: 8px;
-  border-color: rgba(105, 38, 34, 0.55);
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--wb) 32%, var(--line));
+  background:
+    radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--wb) 12%, transparent), transparent 55%),
+    linear-gradient(150deg, rgba(43, 36, 31, 0.66), rgba(23, 20, 17, 0.72));
 }
 
-.opponent-head {
+.warband-field.mine {
+  border-color: color-mix(in srgb, var(--wb) 42%, var(--line));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wb) 18%, transparent),
+    0 -4px 20px color-mix(in srgb, var(--wb) 10%, transparent);
+}
+
+.field-banner {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.opponent-head strong {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.opponent-deck-name {
-  flex: 1;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.opponent-fighters,
-.opponent-played {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.opponent-counters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.my-fighters,
-.my-played {
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(43, 36, 31, 0.6), rgba(28, 24, 21, 0.66));
-}
-
-.fighter-row,
-.played-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.played-empty {
-  color: var(--muted);
-  font-size: 0.84rem;
-  padding: 10px 4px;
-}
-
-.playmat-dock {
-  border-top: 1px solid var(--line);
-  background: rgba(23, 20, 17, 0.96);
-  padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-  display: grid;
-  gap: 8px;
-}
-
-.dock-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.dock-pile {
-  display: grid;
-  justify-items: center;
-  gap: 3px;
-  padding: 6px 8px;
-  border: 1px solid rgba(212, 189, 140, 0.2);
-  border-radius: 8px;
-  background: rgba(31, 27, 24, 0.85);
-  color: #f3dfb8;
-  font-size: 0.7rem;
-  font-weight: 750;
-  white-space: nowrap;
-}
-
-.dock-pile .card-tile.card-sm {
-  width: 34px;
-}
-
-.dock-count {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  aspect-ratio: 63 / 88;
-  border: 1px dashed rgba(212, 189, 140, 0.4);
+.field-side {
+  font-size: 0.56rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 3px 8px;
   border-radius: 5px;
-  font-size: 0.95rem;
-  font-weight: 800;
+  color: #10100e;
+  background: var(--wb);
 }
 
-.dock-count.gold {
-  color: var(--gilded);
-  border-color: rgba(216, 167, 71, 0.6);
-}
-
-.glory-control {
-  display: flex;
+.field-name {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #f5efe2;
 }
 
-.glory-control .icon-button {
-  min-height: 38px;
-  min-width: 38px;
+.field-warband {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
-.glory-value {
+.field-glory {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   color: var(--gilded);
   font-weight: 800;
-  font-size: 1.05rem;
 }
 
-.glory-value small {
+.field-glory b {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.field-glory small {
   color: var(--ember);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
 }
 
-.end-phase-button {
+.field-fighters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.field-played {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px dashed rgba(212, 189, 140, 0.16);
+  background: rgba(10, 8, 6, 0.28);
+}
+
+.field-played-empty {
+  color: var(--muted);
+  font-size: 0.76rem;
+  padding: 4px 6px;
+}
+
+.field-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.field-stat {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 1px solid rgba(216, 167, 71, 0.5);
-  border-radius: 8px;
-  color: #241708;
-  background: linear-gradient(160deg, var(--gilded), var(--gold));
-  font-weight: 850;
+  padding: 3px 9px;
+  border: 1px solid rgba(212, 189, 140, 0.2);
+  border-radius: 999px;
+  background: rgba(23, 20, 17, 0.8);
+  color: #e7dcc7;
+  font-size: 0.72rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.hand-tabs {
+.field-stat.tappable {
+  cursor: pointer;
+}
+
+.field-stat.gold {
+  color: var(--gilded);
+  border-color: rgba(216, 167, 71, 0.42);
+}
+
+/* The front line between the two warbands. */
+.front-line {
+  position: relative;
   display: flex;
-  gap: 6px;
-}
-
-.hand-tabs button {
-  flex: 1;
-  min-height: 38px;
-  border: 1px solid rgba(212, 189, 140, 0.2);
-  border-radius: 8px;
-  background: rgba(31, 27, 24, 0.8);
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 750;
-}
-
-.hand-tabs button.active {
-  color: #f3dfb8;
-  border-color: var(--gold);
-  background: rgba(105, 38, 34, 0.3);
-}
-
-.hand-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  min-height: 120px;
   align-items: center;
-  padding-bottom: 2px;
+  justify-content: center;
+  margin: 10px 0;
+  flex: 0 0 auto;
 }
+
+.front-line::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(229, 106, 46, 0.5) 30%,
+    var(--gilded),
+    rgba(229, 106, 46, 0.5) 70%,
+    transparent
+  );
+  opacity: 0.65;
+}
+
+.front-line-crest {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--gilded);
+  border: 1px solid rgba(216, 167, 71, 0.5);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(43, 36, 31, 0.98), rgba(18, 15, 13, 1));
+  box-shadow: 0 0 14px rgba(229, 106, 46, 0.35), inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- Fighter tile ---------------------------------------------------- */
+
+.fighter-tile {
+  position: relative;
+  flex-shrink: 0;
+  width: 104px;
+  aspect-ratio: 63 / 88;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--wb) 40%, rgba(212, 189, 140, 0.3));
+  border-radius: 9px;
+  background: #14100d;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.fighter-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55),
+    0 0 16px color-mix(in srgb, var(--wb) 40%, transparent);
+}
+
+.fighter-tile.compact {
+  width: 74px;
+  border-radius: 7px;
+}
+
+.fighter-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fighter-tile.inspired {
+  border-color: var(--gilded);
+  box-shadow: 0 0 16px rgba(240, 196, 80, 0.5);
+}
+
+.fighter-tile.out {
+  filter: grayscale(0.9) brightness(0.5);
+}
+
+.fighter-fallback {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 4px 4px 18px;
+  text-align: center;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--wb) 22%, #33241c), #1c1512);
+}
+
+.fighter-fallback strong {
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.fighter-fallback small {
+  font-size: 0.58rem;
+  color: var(--muted);
+}
+
+.fighter-damage {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--oxblood);
+  border: 1px solid rgba(255, 212, 207, 0.55);
+  color: #ffd4cf;
+  font-size: 0.72rem;
+  font-weight: 850;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.fighter-inspired-mark {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(240, 196, 80, 0.92);
+  color: #241708;
+  box-shadow: 0 0 10px rgba(240, 196, 80, 0.6);
+}
+
+.fighter-upgrade-count {
+  position: absolute;
+  bottom: 22px;
+  right: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(127, 152, 111, 0.95);
+  color: #10150c;
+  font-size: 0.64rem;
+  font-weight: 850;
+}
+
+.fighter-out-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(245, 239, 226, 0.9);
+  background: rgba(0, 0, 0, 0.42);
+}
+
+/* Name ribbon + health bar along the foot of every fighter. */
+.fighter-ribbon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 2px;
+  padding: 10px 5px 4px;
+  background: linear-gradient(180deg, transparent, rgba(8, 6, 5, 0.92) 55%);
+}
+
+.fighter-name {
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #f5efe2;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fighter-tile.compact .fighter-name {
+  font-size: 0.54rem;
+}
+
+.fighter-wounds {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.wound-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.fighter-wounds.healthy .wound-fill {
+  background: linear-gradient(90deg, #6f9a5f, #8fbf6f);
+}
+
+.fighter-wounds.hurt .wound-fill {
+  background: linear-gradient(90deg, var(--gold), var(--gilded));
+}
+
+.fighter-wounds.critical .wound-fill {
+  background: linear-gradient(90deg, var(--oxblood), var(--ember));
+}
+
+/* ---- Card tile ------------------------------------------------------- */
 
 .card-tile {
   display: inline-block;
@@ -2870,6 +3328,12 @@ label {
   overflow: hidden;
   aspect-ratio: 63 / 88;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+button.card-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.55), 0 0 14px rgba(240, 196, 80, 0.25);
 }
 
 .card-tile img {
@@ -2880,7 +3344,7 @@ label {
 }
 
 .card-tile.card-sm {
-  width: 64px;
+  width: 60px;
 }
 
 .card-tile.card-md {
@@ -2964,111 +3428,288 @@ label {
   letter-spacing: 0.1em;
 }
 
-.fighter-tile {
-  position: relative;
-  flex-shrink: 0;
-  width: 96px;
-  aspect-ratio: 63 / 88;
-  padding: 0;
-  border: 1px solid rgba(212, 189, 140, 0.3);
-  border-radius: 8px;
-  background: #14100d;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
+/* ---- War dock: your private hand + piles + controls ------------------ */
 
-.fighter-tile.compact {
-  width: 60px;
-  border-radius: 6px;
-}
-
-.fighter-tile img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.fighter-tile.inspired {
-  border-color: var(--gilded);
-  box-shadow: 0 0 14px rgba(240, 196, 80, 0.45);
-}
-
-.fighter-tile.out {
-  filter: grayscale(0.9) brightness(0.55);
-}
-
-.fighter-fallback {
+.playmat-dock {
+  border-top: 1px solid color-mix(in srgb, var(--wb-mine) 30%, var(--line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wb-mine) 8%, transparent), transparent 40%),
+    rgba(18, 15, 13, 0.97);
+  padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
   display: grid;
-  align-content: center;
+  gap: 8px;
+  box-shadow: 0 -6px 22px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile-first: pile shelf wraps so End Phase always lands on its own full
+   row and never scrolls out of reach. Desktop restores a single inline row. */
+.dock-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-bottom: 2px;
+}
+
+.dock-pile {
+  display: grid;
   justify-items: center;
-  gap: 4px;
-  width: 100%;
-  height: 100%;
-  padding: 4px;
-  text-align: center;
-  background: linear-gradient(150deg, #33241c, #1c1512);
+  gap: 3px;
+  padding: 5px 7px;
+  border: 1px solid rgba(212, 189, 140, 0.2);
+  border-radius: 8px;
+  background: rgba(31, 27, 24, 0.85);
+  color: #f3dfb8;
+  font-size: 0.62rem;
+  font-weight: 750;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-.fighter-fallback strong {
-  font-size: 0.68rem;
-  line-height: 1.2;
+.dock-pile:hover {
+  border-color: rgba(216, 167, 71, 0.5);
+  transform: translateY(-2px);
 }
 
-.fighter-fallback small {
-  font-size: 0.58rem;
-  color: var(--muted);
+.dock-pile .card-tile.card-sm {
+  width: 30px;
 }
 
-.fighter-damage {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 22px;
-  height: 22px;
+.dock-count {
   display: grid;
   place-items: center;
+  width: 30px;
+  aspect-ratio: 63 / 88;
+  border: 1px dashed rgba(212, 189, 140, 0.4);
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.dock-count.gold {
+  color: var(--gilded);
+  border-color: rgba(216, 167, 71, 0.6);
+}
+
+.glory-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(216, 167, 71, 0.32);
+  background: rgba(31, 27, 24, 0.85);
+}
+
+.glory-control .icon-button {
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.glory-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gilded);
+  font-weight: 800;
   padding: 0 4px;
-  border-radius: 999px;
-  background: var(--oxblood);
-  border: 1px solid rgba(255, 212, 207, 0.5);
-  color: #ffd4cf;
-  font-size: 0.72rem;
-  font-weight: 850;
 }
 
-.fighter-inspired-mark {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(240, 196, 80, 0.9);
+.glory-value b {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  animation: glory-pop 0.45s ease;
+}
+
+.glory-value small {
+  color: var(--ember);
+  font-size: 0.75rem;
+}
+
+.end-phase-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid rgba(216, 167, 71, 0.5);
+  border-radius: 8px;
   color: #241708;
-}
-
-.fighter-upgrade-count {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: rgba(127, 152, 111, 0.92);
-  color: #10150c;
-  font-size: 0.66rem;
+  background: linear-gradient(160deg, var(--gilded), var(--gold));
   font-weight: 850;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(216, 167, 71, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  /* Mobile: shares the row beneath the piles with the glory control. */
+  flex: 1 1 auto;
 }
 
-.fighter-out-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: rgba(245, 239, 226, 0.85);
-  background: rgba(0, 0, 0, 0.35);
+.end-phase-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(216, 167, 71, 0.4);
+}
+
+.hand-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.hand-tabs button {
+  flex: 1;
+  min-height: 36px;
+  border: 1px solid rgba(212, 189, 140, 0.2);
+  border-radius: 8px;
+  background: rgba(31, 27, 24, 0.8);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.hand-tabs button.active {
+  color: #241708;
+  border-color: var(--gilded);
+  background: linear-gradient(160deg, var(--gilded), var(--gold));
+}
+
+.hand-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  min-height: 132px;
+  align-items: center;
+  padding: 2px 2px 4px;
+}
+
+.hand-row .card-tile {
+  animation: card-deal 0.32s ease backwards;
+}
+
+@keyframes card-deal {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.played-empty {
+  color: var(--muted);
+  font-size: 0.84rem;
+  padding: 10px 4px;
+}
+
+/* ---- Desktop: warbands face off left vs right ------------------------ */
+
+@media (min-width: 860px) {
+  .code-chip-label {
+    display: inline;
+  }
+
+  .dock-controls {
+    flex-wrap: nowrap;
+  }
+
+  .end-phase-button {
+    flex: 0 0 auto;
+  }
+
+  .glory-control {
+    margin-left: auto;
+  }
+
+  .dock-pile {
+    font-size: 0.68rem;
+    padding: 6px 8px;
+  }
+
+  .dock-pile .card-tile.card-sm,
+  .dock-count {
+    width: 34px;
+  }
+
+  .battle-standard {
+    grid-template-columns: 1fr minmax(160px, 1.2fr) 1fr;
+    grid-template-areas: "enemy tug mine";
+    padding: 12px 16px;
+  }
+
+  .banner-name {
+    font-size: 1.12rem;
+  }
+
+  .banner-glory b {
+    font-size: 1.8rem;
+  }
+
+  .battlefield {
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    padding: 14px 16px;
+  }
+
+  .battlefield > .warband-field {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-y: auto;
+    align-content: start;
+  }
+
+  .front-line {
+    flex: 0 0 34px;
+    margin: 0;
+  }
+
+  .front-line::before {
+    left: 50%;
+    right: auto;
+    top: 4%;
+    bottom: 4%;
+    height: auto;
+    width: 2px;
+    transform: translateX(-50%);
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(229, 106, 46, 0.5) 30%,
+      var(--gilded),
+      rgba(229, 106, 46, 0.5) 70%,
+      transparent
+    );
+  }
+
+  .fighter-tile {
+    width: 112px;
+  }
+
+  .hand-row {
+    min-height: 150px;
+  }
+}
+
+/* ---- Respect reduced motion ------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .round-rune.active,
+  .lead-enemy .tug-fill.enemy,
+  .lead-mine .tug-fill.mine,
+  .banner-glory b,
+  .glory-value b,
+  .hand-row .card-tile {
+    animation: none;
+  }
+
+  .tug-fill,
+  .wound-fill,
+  .fighter-tile,
+  .card-tile,
+  .dock-pile,
+  .end-phase-button {
+    transition: none;
+  }
 }
 
 .playmat-overlay {
@@ -3342,24 +3983,6 @@ label {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-}
-
-@media (min-width: 720px) {
-  .playmat-scroll {
-    padding: 14px 18px;
-  }
-
-  .card-tile.card-md {
-    width: 120px;
-  }
-
-  .fighter-tile {
-    width: 110px;
-  }
-
-  .hand-row {
-    min-height: 176px;
-  }
 }
 
 /* ==========================================================================

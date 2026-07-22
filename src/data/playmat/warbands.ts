@@ -122,6 +122,21 @@ export const playmatWarbands: PlaymatWarbandDef[] = [
 // Lookup helpers
 // ----------------------------------------------------------------------------
 
+// Signature colour per warband — the single accent that gives each side its
+// heraldic identity across the board (banner, fighter frames, glory bar).
+const WARBAND_ACCENTS: Record<string, string> = {
+  "gnarlspirit-pack": "#c2412f", // feral blood-rust
+  "sons-of-velmorn": "#6f9a5f", // grave-green
+  "grinkraks-looncourt": "#9a6cc4", // moon-madness violet
+  "xandires-truthseekers": "#4f8fce", // sigmarite azure
+  "drepurs-wraithcreepers": "#3fb3a3" // spectral teal
+};
+
+/** A warband's heraldic accent colour, or gilded for custom/unknown seats. */
+export function warbandAccent(warbandId: string | null | undefined): string {
+  return (warbandId && WARBAND_ACCENTS[warbandId]) || "#d8a747";
+}
+
 export function getWarband(warbandId: string | null | undefined) {
   return playmatWarbands.find((warband) => warband.id === warbandId) ?? null;
 }

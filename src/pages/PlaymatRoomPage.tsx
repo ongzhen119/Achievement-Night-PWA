@@ -1,4 +1,4 @@
-import { DragEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, DragEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ChevronRight,
@@ -11,6 +11,7 @@ import {
   Play,
   Plus,
   RotateCcw,
+  Swords,
   Trophy
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -29,7 +30,7 @@ import {
   OPENING_POWER_HAND,
   STANDARD_ROUNDS
 } from "../data/playmat/rivalsDecks";
-import { getFighter, getWarband } from "../data/playmat/warbands";
+import { getFighter, getWarband, warbandAccent } from "../data/playmat/warbands";
 import { useLanguage } from "../i18n/useLanguage";
 import { formatText } from "../utils/format";
 import { shuffleCards } from "../utils/playmat/engine";
@@ -52,6 +53,10 @@ type ModalState =
   | { kind: "log" }
   | { kind: "menu" }
   | null;
+
+// Rounds are a fixed sequence in Underworlds — render them as struck runes.
+const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+const roman = (n: number) => ROMAN[n] ?? String(n);
 
 const ZONE_TITLE_KEYS: Record<PlaymatCardZone, string> = {
   powerDeck: "playmat.zone.powerDeck",
@@ -480,16 +485,47 @@ export default function PlaymatRoomPage() {
   const modalOwnerPlayer = (ownerId: string) =>
     players.find((player) => player.id === ownerId) ?? null;
 
+  // Battle Standard — the contested glory meter between the two warbands.
+  const myAccent = warbandAccent(myPlayer.warband_id);
+  const primaryOpponent = opponents[0] ?? null;
+  const oppState = primaryOpponent ? gameState.players[primaryOpponent.id] ?? null : null;
+  const oppWarband = getWarband(primaryOpponent?.warband_id);
+  const oppAccent = warbandAccent(primaryOpponent?.warband_id);
+  const myGlory = myState?.gloryEarned ?? 0;
+  const oppGlory = oppState?.gloryEarned ?? 0;
+  const gloryTotal = myGlory + oppGlory;
+  const myShare = gloryTotal > 0 ? (myGlory / gloryTotal) * 100 : 50;
+  const oppShare = 100 - myShare;
+  const lead = myGlory === oppGlory ? "tie" : myGlory > oppGlory ? "mine" : "enemy";
+  const totalRounds = Math.max(STANDARD_ROUNDS, gameState.round);
+
   return (
     <main className="playmat-shell">
-      <header className="playmat-header">
-        <button className="playmat-chip tappable" onClick={() => void copyCode()} type="button">
-          {room?.code}
+      <header className="battle-bar">
+        <button className="code-chip tappable" onClick={() => void copyCode()} type="button">
+          <span className="code-chip-label">{t("playmat.roomCodeLabel")}</span>
+          <span className="code-chip-value">{room?.code}</span>
+          {copied ? <span className="code-chip-copied">{t("playmat.codeCopied")}</span> : null}
         </button>
-        <span className="playmat-round">
-          {formatText(t("playmat.roundLabel"), { round: gameState.round })} · {phaseLabel}
-        </span>
-        <div className="playmat-header-buttons">
+
+        <div
+          className="round-track"
+          aria-label={formatText(t("playmat.roundLabel"), { round: gameState.round })}
+        >
+          {Array.from({ length: totalRounds }, (_, index) => index + 1).map((n) => (
+            <span
+              className={`round-rune${
+                n === gameState.round ? " active" : n < gameState.round ? " past" : ""
+              }`}
+              key={n}
+            >
+              {roman(n)}
+            </span>
+          ))}
+          <span className={`phase-pill ${gameState.phase}`}>{phaseLabel}</span>
+        </div>
+
+        <div className="battle-bar-buttons">
           <button
             className="icon-button"
             aria-label={t("playmat.logTitle")}
@@ -509,9 +545,47 @@ export default function PlaymatRoomPage() {
         </div>
       </header>
 
+      <section className={`battle-standard lead-${lead}`} aria-label={t("playmat.gloryShort")}>
+        <div className="standard-banner enemy" style={{ "--wb": oppAccent } as CSSProperties}>
+          <span className="banner-side">{t("playmat.enemyLabel")}</span>
+          <strong className="banner-name">
+            {oppWarband?.name ?? primaryOpponent?.name ?? t("playmat.waitingOpponent")}
+          </strong>
+          <span className={`banner-glory${lead === "enemy" ? " leading" : ""}`}>
+            <Trophy size={15} aria-hidden="true" />
+            <b key={oppGlory}>{oppGlory}</b>
+          </span>
+        </div>
+
+        <div className="glory-tug">
+          <div className="tug-track">
+            <span
+              className="tug-fill enemy"
+              style={{ flexGrow: oppShare, "--wb": oppAccent } as CSSProperties}
+            />
+            <span className="tug-seam" aria-hidden="true">
+              <Swords size={13} />
+            </span>
+            <span
+              className="tug-fill mine"
+              style={{ flexGrow: myShare, "--wb": myAccent } as CSSProperties}
+            />
+          </div>
+        </div>
+
+        <div className="standard-banner mine" style={{ "--wb": myAccent } as CSSProperties}>
+          <span className="banner-side">{t("playmat.you")}</span>
+          <strong className="banner-name">{myWarband?.name}</strong>
+          <span className={`banner-glory${lead === "mine" ? " leading" : ""}`}>
+            <Trophy size={15} aria-hidden="true" />
+            <b key={myGlory}>{myGlory}</b>
+          </span>
+        </div>
+      </section>
+
       {actionErrorKey ? <p className="error-line playmat-error">{t(actionErrorKey)}</p> : null}
 
-      <div className="playmat-scroll">
+      <div className="battlefield">
         {opponents.map((opponent) => (
           <OpponentArea
             key={opponent.id}
@@ -527,63 +601,72 @@ export default function PlaymatRoomPage() {
           />
         ))}
 
+        <div className="front-line" aria-hidden="true">
+          <span className="front-line-crest">
+            <Swords size={15} />
+          </span>
+        </div>
+
         {myState && myWarband ? (
-          <>
-            <section className="my-fighters">
-              <p className="playmat-zone-title">{t("playmat.fightersTitle")}</p>
-              <div className="fighter-row">
-                {myWarband.fighters.map((fighter) => {
-                  const fighterState = myState.fighters[fighter.id];
-                  if (!fighterState) {
-                    return null;
-                  }
+          <section className="warband-field mine" style={{ "--wb": myAccent } as CSSProperties}>
+            <header className="field-banner">
+              <span className="field-side">{t("playmat.you")}</span>
+              <strong className="field-name">{myWarband.name}</strong>
+              <span className="field-glory">
+                <Trophy size={14} aria-hidden="true" />
+                <b>{myState.gloryEarned}</b>
+                {myState.glorySpent > 0 ? <small>−{myState.glorySpent}</small> : null}
+              </span>
+            </header>
 
-                  return (
-                    <FighterTile
-                      fighter={fighter}
-                      key={fighter.id}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => handleFighterDrop(event, fighter.id)}
-                      onPress={() =>
-                        setModal({ kind: "fighter", ownerId: myPlayer.id, fighterId: fighter.id })
-                      }
-                      state={fighterState}
-                      warbandId={myWarband.id}
-                    />
-                  );
-                })}
-              </div>
-            </section>
+            <div className="field-fighters">
+              {myWarband.fighters.map((fighter) => {
+                const fighterState = myState.fighters[fighter.id];
+                if (!fighterState) {
+                  return null;
+                }
 
-            <section
-              className="my-played"
+                return (
+                  <FighterTile
+                    fighter={fighter}
+                    key={fighter.id}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => handleFighterDrop(event, fighter.id)}
+                    onPress={() =>
+                      setModal({ kind: "fighter", ownerId: myPlayer.id, fighterId: fighter.id })
+                    }
+                    state={fighterState}
+                    warbandId={myWarband.id}
+                  />
+                );
+              })}
+            </div>
+
+            <div
+              className="field-played"
               onDragOver={(event) => event.preventDefault()}
               onDrop={handlePlayedDrop}
+              aria-label={t("playmat.zone.played")}
             >
-              <p className="playmat-zone-title">
-                {t("playmat.zone.played")} ({myState.played.length})
-              </p>
-              <div className="played-row">
-                {myState.played.length ? (
-                  myState.played.map((cardId) => {
-                    const card = getCatalogCard(cardId);
-                    return card ? (
-                      <CardTile
-                        card={card}
-                        key={cardId}
-                        onPress={() =>
-                          setModal({ kind: "card", ownerId: myPlayer.id, zone: "played", cardId })
-                        }
-                        size="sm"
-                      />
-                    ) : null;
-                  })
-                ) : (
-                  <p className="played-empty">{t("playmat.playedEmptyHint")}</p>
-                )}
-              </div>
-            </section>
-          </>
+              {myState.played.length ? (
+                myState.played.map((cardId) => {
+                  const card = getCatalogCard(cardId);
+                  return card ? (
+                    <CardTile
+                      card={card}
+                      key={cardId}
+                      onPress={() =>
+                        setModal({ kind: "card", ownerId: myPlayer.id, zone: "played", cardId })
+                      }
+                      size="sm"
+                    />
+                  ) : null;
+                })
+              ) : (
+                <span className="field-played-empty">{t("playmat.playedEmptyHint")}</span>
+              )}
+            </div>
+          </section>
         ) : (
           <p className="status-line">{t("playmat.preparing")}</p>
         )}
@@ -642,7 +725,8 @@ export default function PlaymatRoomPage() {
                 <Minus size={16} aria-hidden="true" />
               </button>
               <span className="glory-value">
-                <Trophy size={14} aria-hidden="true" /> {myState.gloryEarned}
+                <Trophy size={14} aria-hidden="true" />
+                <b key={myState.gloryEarned}>{myState.gloryEarned}</b>
                 {myState.glorySpent > 0 ? <small>−{myState.glorySpent}</small> : null}
               </span>
               <button

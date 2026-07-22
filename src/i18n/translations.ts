@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿// Edit this file to customise achievement wording / sections.
+﻿﻿﻿﻿// Edit this file to customise achievement wording / sections.
 // Keep all visible English and Simplified Chinese wording here so components stay reusable.
 export const translations = {
   en: {
@@ -1138,6 +1138,8 @@ export const translations = {
     "playmat.codeCopied": "已复制",
     "playmat.lobbyIntro": "等待所有玩家入座并选好卡组，主持人确认后开始游戏。",
     "playmat.you": "你",
+    "playmat.enemyLabel": "敌方",
+    "playmat.noBoardYet": "场上还没有牌",
     "playmat.noDeckYet": "尚未选卡组",
     "playmat.startGame": "开始游戏",
     "playmat.startHint": "至少需要 2 名入座玩家，且都已选好卡组。",
