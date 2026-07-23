@@ -1,4 +1,4 @@
-import { DragEvent, useEffect, useMemo, useState } from "react";
+import { PointerEvent as ReactPointerEvent, useEffect, useMemo, useState } from "react";
 import {
   cardBackPath,
   CatalogCard,
@@ -13,8 +13,10 @@ interface CardTileProps {
   backType?: PlaymatCardType;
   size?: "sm" | "md" | "lg";
   onPress?: () => void;
-  draggable?: boolean;
-  onDragStart?: (event: DragEvent<HTMLButtonElement>) => void;
+  /** Begins a pointer drag (see useCardDrag). Renders the tile as a button. */
+  onPointerDown?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  /** Dims the tile while it is the card being dragged. */
+  dragging?: boolean;
   ariaLabel?: string;
 }
 
@@ -27,8 +29,8 @@ export default function CardTile({
   backType = "gambit",
   size = "md",
   onPress,
-  draggable,
-  onDragStart,
+  onPointerDown,
+  dragging,
   ariaLabel
 }: CardTileProps) {
   const { t } = useLanguage();
@@ -87,12 +89,14 @@ export default function CardTile({
     />
   );
 
-  const className = `card-tile card-${size}${card ? "" : " face-down"}`;
+  const className = `card-tile card-${size}${card ? "" : " face-down"}${
+    dragging ? " dragging" : ""
+  }`;
   const label = ariaLabel ?? card?.name ?? t("playmat.cardBack");
 
   // Plain element when inert so card tiles can sit inside other buttons
-  // (e.g. the deck piles in the dock) without nesting <button> elements.
-  if (!onPress && !draggable) {
+  // (e.g. the deck piles in the dock, the drag ghost) without nesting buttons.
+  if (!onPress && !onPointerDown) {
     return (
       <span aria-label={label} className={className} role="img">
         {body}
@@ -104,9 +108,8 @@ export default function CardTile({
     <button
       aria-label={label}
       className={className}
-      draggable={draggable}
       onClick={onPress}
-      onDragStart={onDragStart}
+      onPointerDown={onPointerDown}
       type="button"
     >
       {body}

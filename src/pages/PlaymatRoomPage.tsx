@@ -1,4 +1,4 @@
-import { CSSProperties, DragEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ChevronRight,
@@ -42,6 +42,7 @@ import {
   PlaymatPlayerRecord,
   PlaymatPlayerState
 } from "../utils/playmat/types";
+import { useCardDrag } from "../utils/playmat/useCardDrag";
 import { useGameRoom } from "../utils/playmat/useGameRoom";
 
 type ModalState =
@@ -295,49 +296,21 @@ export default function PlaymatRoomPage() {
   };
 
   // ------------------------------------------------------------------
-  // Drag & drop (desktop convenience; every action also works by tap)
+  // Drag to play (unified pointer drag — works on mouse, touch and pen).
+  // Flick a hand card upward onto a zone; taps still open the card modal.
   // ------------------------------------------------------------------
 
-  const handleHandDragStart = (event: DragEvent, cardId: string) => {
-    event.dataTransfer.setData("text/plain", JSON.stringify({ cardId, from: "hand" }));
-    event.dataTransfer.effectAllowed = "move";
-  };
-
-  const readDragPayload = (event: DragEvent): { cardId: string; from: string } | null => {
-    try {
-      const parsed = JSON.parse(event.dataTransfer.getData("text/plain")) as {
-        cardId?: string;
-        from?: string;
-      };
-      return parsed.cardId ? { cardId: parsed.cardId, from: parsed.from ?? "hand" } : null;
-    } catch {
-      return null;
+  const drag = useCardDrag({
+    onDrop: (cardId, zone) => {
+      if (zone.kind === "played") {
+        void sendEvent("PLAY_CARD", { cardId });
+      } else if (zone.kind === "discard") {
+        void sendEvent("DISCARD_CARD", { cardId });
+      } else if (zone.kind === "fighter" && getCatalogCard(cardId)?.type === "upgrade") {
+        void sendEvent("ASSIGN_UPGRADE", { cardId, fighterId: zone.fighterId });
+      }
     }
-  };
-
-  const handlePlayedDrop = (event: DragEvent) => {
-    event.preventDefault();
-    const payload = readDragPayload(event);
-    if (payload?.from === "hand") {
-      void sendEvent("PLAY_CARD", { cardId: payload.cardId });
-    }
-  };
-
-  const handleDiscardDrop = (event: DragEvent) => {
-    event.preventDefault();
-    const payload = readDragPayload(event);
-    if (payload) {
-      void sendEvent("DISCARD_CARD", { cardId: payload.cardId });
-    }
-  };
-
-  const handleFighterDrop = (event: DragEvent, fighterId: string) => {
-    event.preventDefault();
-    const payload = readDragPayload(event);
-    if (payload && getCatalogCard(payload.cardId)?.type === "upgrade") {
-      void sendEvent("ASSIGN_UPGRADE", { cardId: payload.cardId, fighterId });
-    }
-  };
+  });
 
   // ------------------------------------------------------------------
   // Early states
@@ -628,10 +601,9 @@ export default function PlaymatRoomPage() {
 
                 return (
                   <FighterTile
+                    dropTarget
                     fighter={fighter}
                     key={fighter.id}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={(event) => handleFighterDrop(event, fighter.id)}
                     onPress={() =>
                       setModal({ kind: "fighter", ownerId: myPlayer.id, fighterId: fighter.id })
                     }
@@ -644,8 +616,7 @@ export default function PlaymatRoomPage() {
 
             <div
               className="field-played"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={handlePlayedDrop}
+              data-drop="played"
               aria-label={t("playmat.zone.played")}
             >
               {myState.played.length ? (
@@ -687,8 +658,7 @@ export default function PlaymatRoomPage() {
             </button>
             <button
               className="dock-pile"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={handleDiscardDrop}
+              data-drop="discard"
               onClick={() => setModal({ kind: "pile", ownerId: myPlayer.id, zone: "discard" })}
               type="button"
             >
@@ -778,9 +748,13 @@ export default function PlaymatRoomPage() {
               return (
                 <CardTile
                   card={card}
-                  draggable={handTab === "power"}
+                  dragging={drag.draggingCardId === cardId}
                   key={cardId}
-                  onDragStart={(event) => handleHandDragStart(event, cardId)}
+                  onPointerDown={
+                    handTab === "power"
+                      ? (event) => drag.onPointerDown(event, cardId)
+                      : undefined
+                  }
                   onPress={() =>
                     setModal({
                       kind: "card",
@@ -1133,6 +1107,12 @@ export default function PlaymatRoomPage() {
               </div>
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {drag.ghost ? (
+        <div className="drag-ghost" style={{ left: drag.ghost.x, top: drag.ghost.y }}>
+          <CardTile card={getCatalogCard(drag.ghost.cardId)} size="md" />
         </div>
       ) : null}
     </main>

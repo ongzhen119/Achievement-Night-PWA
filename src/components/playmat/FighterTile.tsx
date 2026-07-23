@@ -1,4 +1,4 @@
-import { DragEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flame, Skull } from "lucide-react";
 import {
   fighterImagePath,
@@ -13,8 +13,8 @@ interface FighterTileProps {
   state: PlaymatFighterState;
   compact?: boolean;
   onPress?: () => void;
-  onDragOver?: (event: DragEvent<HTMLButtonElement>) => void;
-  onDrop?: (event: DragEvent<HTMLButtonElement>) => void;
+  /** Marks this tile as an upgrade drop target for useCardDrag hit-testing. */
+  dropTarget?: boolean;
 }
 
 /** A fighter card with a health bar, damage, inspired and out-of-action markers. */
@@ -24,8 +24,7 @@ export default function FighterTile({
   state,
   compact,
   onPress,
-  onDragOver,
-  onDrop
+  dropTarget
 }: FighterTileProps) {
   const { t } = useLanguage();
 
@@ -58,9 +57,8 @@ export default function FighterTile({
         .filter(Boolean)
         .join(" ")}
       onClick={onPress}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
       type="button"
+      {...(dropTarget ? { "data-drop": "fighter", "data-fighter-id": fighter.id } : {})}
     >
       {failed ? (
         <span className="fighter-fallback">
