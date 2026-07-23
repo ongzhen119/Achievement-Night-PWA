@@ -1,4 +1,4 @@
-﻿﻿﻿﻿// Edit this file to customise achievement wording / sections.
+﻿﻿﻿// Edit this file to customise achievement wording / sections.
 // Keep all visible English and Simplified Chinese wording here so components stay reusable.
 export const translations = {
   en: {
@@ -527,6 +527,11 @@ export const translations = {
     "playmat.objectiveDiscardShort": "Obj. discard",
     "playmat.gainGlory": "Gain glory",
     "playmat.spendGlory": "Spend glory",
+    "playmat.editGlory": "Edit glory",
+    "playmat.editGloryHint": "Fix a misclick — set your glory total directly.",
+    "playmat.gloryTotalLabel": "Glory total",
+    "playmat.save": "Save",
+    "playmat.cancel": "Cancel",
     "playmat.addWound": "Add damage",
     "playmat.healWound": "Heal damage",
     "playmat.inspire": "Inspire",
@@ -568,6 +573,7 @@ export const translations = {
     "playmat.log.shuffleObjective": "{player} shuffled their objective deck",
     "playmat.log.gainGlory": "{player} gained {amount} glory",
     "playmat.log.spendGlory": "{player} spent {amount} glory",
+    "playmat.log.setGlory": "{player} set their glory to {value}",
     "playmat.log.scoreObjective": "{player} scored {card}",
     "playmat.log.discardObjective": "{player} discarded objective {card}",
     "playmat.log.assignUpgrade": "{player} attached {card} to {fighter}",
@@ -1186,6 +1192,11 @@ export const translations = {
     "playmat.objectiveDiscardShort": "目标弃牌",
     "playmat.gainGlory": "获得荣耀",
     "playmat.spendGlory": "花费荣耀",
+    "playmat.editGlory": "编辑荣耀",
+    "playmat.editGloryHint": "修正误触——直接设置你的荣耀总数。",
+    "playmat.gloryTotalLabel": "荣耀总数",
+    "playmat.save": "保存",
+    "playmat.cancel": "取消",
     "playmat.addWound": "增加伤害",
     "playmat.healWound": "治疗伤害",
     "playmat.inspire": "激励",
@@ -1227,6 +1238,7 @@ export const translations = {
     "playmat.log.shuffleObjective": "{player} 洗了目标牌库",
     "playmat.log.gainGlory": "{player} 获得 {amount} 点荣耀",
     "playmat.log.spendGlory": "{player} 花费 {amount} 点荣耀",
+    "playmat.log.setGlory": "{player} 将荣耀设为 {value}",
     "playmat.log.scoreObjective": "{player} 达成了 {card}",
     "playmat.log.discardObjective": "{player} 弃置了目标牌 {card}",
     "playmat.log.assignUpgrade": "{player} 将 {card} 装备给 {fighter}",

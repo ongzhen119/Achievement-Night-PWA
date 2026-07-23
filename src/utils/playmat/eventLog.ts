@@ -73,6 +73,8 @@ export function describePlaymatEvent(
       return line("playmat.log.gainGlory", { amount: payloadNumber(payload, "amount", 1) });
     case "SPEND_GLORY":
       return line("playmat.log.spendGlory", { amount: payloadNumber(payload, "amount", 1) });
+    case "SET_GLORY":
+      return line("playmat.log.setGlory", { value: payloadNumber(payload, "value", 0) });
     case "SCORE_OBJECTIVE":
       return line("playmat.log.scoreObjective", { card: cardName("cardId") });
     case "DISCARD_OBJECTIVE":

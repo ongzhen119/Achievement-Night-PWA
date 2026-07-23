@@ -51,6 +51,7 @@ type ModalState =
   | { kind: "fighter"; ownerId: string; fighterId: string }
   | { kind: "attach"; cardId: string }
   | { kind: "deckMenu"; deck: PlaymatDeckKind }
+  | { kind: "editGlory" }
   | { kind: "log" }
   | { kind: "menu" }
   | null;
@@ -99,6 +100,7 @@ export default function PlaymatRoomPage() {
   } = useGameRoom(code);
 
   const [modal, setModal] = useState<ModalState>(null);
+  const [gloryDraft, setGloryDraft] = useState("");
   const [handTab, setHandTab] = useState<"power" | "objective">("power");
   const [seat, setSeat] = useState<SeatSpec | null>(null);
   const [copied, setCopied] = useState(false);
@@ -694,11 +696,19 @@ export default function PlaymatRoomPage() {
               >
                 <Minus size={16} aria-hidden="true" />
               </button>
-              <span className="glory-value">
+              <button
+                aria-label={t("playmat.editGlory")}
+                className="glory-value tappable"
+                onClick={() => {
+                  setGloryDraft(String(myState.gloryEarned));
+                  setModal({ kind: "editGlory" });
+                }}
+                type="button"
+              >
                 <Trophy size={14} aria-hidden="true" />
                 <b key={myState.gloryEarned}>{myState.gloryEarned}</b>
                 {myState.glorySpent > 0 ? <small>−{myState.glorySpent}</small> : null}
-              </span>
+              </button>
               <button
                 aria-label={t("playmat.gainGlory")}
                 className="icon-button"
@@ -1026,6 +1036,47 @@ export default function PlaymatRoomPage() {
                       {t("playmat.action.shuffleDiscardIn")}
                     </button>
                   ) : null}
+                </div>
+              </PlaymatModal>
+            );
+          })()
+        : null}
+
+      {modal?.kind === "editGlory" && myState
+        ? (() => {
+            const parsed = Number.parseInt(gloryDraft, 10);
+            const valid = Number.isFinite(parsed) && parsed >= 0;
+
+            return (
+              <PlaymatModal onClose={closeModal} title={t("playmat.editGlory")}>
+                <p className="playmat-sheet-subtitle">{t("playmat.editGloryHint")}</p>
+                <label className="form-field">
+                  <span>{t("playmat.gloryTotalLabel")}</span>
+                  <input
+                    autoFocus
+                    className="text-input glory-input"
+                    inputMode="numeric"
+                    min={0}
+                    onChange={(event) => setGloryDraft(event.target.value)}
+                    type="number"
+                    value={gloryDraft}
+                  />
+                </label>
+                <div className="playmat-action-list">
+                  <button
+                    className="playmat-action primary"
+                    disabled={!valid}
+                    onClick={() => {
+                      closeModal();
+                      void sendEvent("SET_GLORY", { value: parsed });
+                    }}
+                    type="button"
+                  >
+                    {t("playmat.save")}
+                  </button>
+                  <button className="playmat-action ghost" onClick={closeModal} type="button">
+                    {t("playmat.cancel")}
+                  </button>
                 </div>
               </PlaymatModal>
             );

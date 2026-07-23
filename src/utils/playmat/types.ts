@@ -41,6 +41,7 @@ export type PlaymatEventType =
   | "SHUFFLE_DECK"
   | "GAIN_GLORY"
   | "SPEND_GLORY"
+  | "SET_GLORY"
   | "SCORE_OBJECTIVE"
   | "DISCARD_OBJECTIVE"
   | "ASSIGN_UPGRADE"

@@ -298,6 +298,22 @@ export function applyPlaymatEvent(
       return true;
     }
 
+    // Corrects a misclicked +/- (gloryEarned only ever increases otherwise).
+    // A direct "set to N" is simplest and safest under event sourcing — no
+    // ordering assumptions about which past event to "undo".
+    case "SET_GLORY": {
+      if (!player) {
+        return false;
+      }
+
+      const value = Math.max(0, Math.round(asNumber(payload.value, player.gloryEarned)));
+      player.gloryEarned = value;
+      if (player.glorySpent > value) {
+        player.glorySpent = value;
+      }
+      return true;
+    }
+
     case "SCORE_OBJECTIVE": {
       const cardId = asString(payload.cardId);
       if (!player || !cardId) {

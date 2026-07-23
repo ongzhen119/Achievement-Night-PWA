@@ -3514,6 +3514,17 @@ button.card-tile:hover {
   color: var(--gilded);
   font-weight: 800;
   padding: 0 4px;
+  border: none;
+  background: none;
+}
+
+.glory-value.tappable {
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.glory-value.tappable:hover {
+  background: rgba(216, 167, 71, 0.14);
 }
 
 .glory-value b {
@@ -3800,6 +3811,13 @@ button.card-tile:hover {
 .playmat-sheet-subtitle {
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+  color: #f3dfb8;
+  font-weight: 700;
 }
 
 .card-zoom {
