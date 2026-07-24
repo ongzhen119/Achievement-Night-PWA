@@ -1,4 +1,4 @@
-﻿﻿﻿// Edit this file to customise achievement wording / sections.
+﻿﻿// Edit this file to customise achievement wording / sections.
 // Keep all visible English and Simplified Chinese wording here so components stay reusable.
 export const translations = {
   en: {
@@ -493,6 +493,7 @@ export const translations = {
     "playmat.phase.end": "End Phase",
     "playmat.endPhaseButton": "End Phase",
     "playmat.nextRoundButton": "Next Round",
+    "playmat.finishGameButton": "Finish Game",
     "playmat.endGameButton": "End Game",
     "playmat.endGameEarlyButton": "End Game Early",
     "playmat.gameOverTitle": "Game Over",
@@ -1158,6 +1159,7 @@ export const translations = {
     "playmat.phase.end": "结束阶段",
     "playmat.endPhaseButton": "结束阶段",
     "playmat.nextRoundButton": "下一回合",
+    "playmat.finishGameButton": "结束本局",
     "playmat.endGameButton": "结束游戏",
     "playmat.endGameEarlyButton": "提前结束游戏",
     "playmat.gameOverTitle": "游戏结束",

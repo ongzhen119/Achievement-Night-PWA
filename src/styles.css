@@ -3170,6 +3170,19 @@ label {
   border-radius: 7px;
 }
 
+/* Fighter detail view: full-size, unobstructed card art (see FighterTile's
+   `zoom` prop) so printed weapon/ability text stays legible. */
+.fighter-tile.zoom {
+  width: min(300px, 70vw);
+  border-radius: 12px;
+  cursor: default;
+}
+
+.fighter-tile.zoom:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
 .fighter-tile img {
   width: 100%;
   height: 100%;
@@ -3206,6 +3219,14 @@ label {
 .fighter-fallback small {
   font-size: 0.58rem;
   color: var(--muted);
+}
+
+.fighter-tile.zoom .fighter-fallback strong {
+  font-size: 1.1rem;
+}
+
+.fighter-tile.zoom .fighter-fallback small {
+  font-size: 0.85rem;
 }
 
 .fighter-damage {
@@ -4009,15 +4030,9 @@ button.card-tile:hover {
   font-weight: 850;
 }
 
-.fighter-sheet {
+.fighter-zoom {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
-.fighter-sheet .fighter-tile {
-  width: 120px;
+  justify-items: center;
 }
 
 .fighter-sheet-info {

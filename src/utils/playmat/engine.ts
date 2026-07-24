@@ -7,6 +7,7 @@
 // so simultaneous actions from two devices can never desync a room.
 
 import { getCatalogCard } from "../../data/playmat/catalog";
+import { STANDARD_ROUNDS } from "../../data/playmat/rivalsDecks";
 import { getWarband } from "../../data/playmat/warbands";
 import {
   createInitialGameState,
@@ -426,6 +427,10 @@ export function applyPlaymatEvent(
 
       if (state.phase === "action") {
         state.phase = "end";
+      } else if (state.round >= STANDARD_ROUNDS) {
+        // A standard game is exactly STANDARD_ROUNDS long — concluding the
+        // final round's end phase ends the game instead of starting another.
+        state.finished = true;
       } else {
         state.phase = "action";
         state.round += 1;

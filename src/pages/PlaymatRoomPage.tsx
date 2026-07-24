@@ -105,6 +105,7 @@ export default function PlaymatRoomPage() {
   const [seat, setSeat] = useState<SeatSpec | null>(null);
   const [copied, setCopied] = useState(false);
   const setupSentRef = useRef(false);
+  const gameEndSentRef = useRef(false);
 
   const myState: PlaymatPlayerState | null = myPlayer
     ? gameState.players[myPlayer.id] ?? null
@@ -178,6 +179,17 @@ export default function PlaymatRoomPage() {
     sendEvent,
     myPlayer
   ]);
+
+  // Mark the room ended in the database once the shared game state concludes
+  // — whether via the final round's end phase or a manual "End Game" tap —
+  // so a would-be third join sees the room as over. Runs on whichever device
+  // notices first; any repeat call is a harmless no-op.
+  useEffect(() => {
+    if (gameState.finished && room?.status === "active" && !gameEndSentRef.current) {
+      gameEndSentRef.current = true;
+      void endRoom();
+    }
+  }, [gameState.finished, room?.status, endRoom]);
 
   const opponents = useMemo(
     () => players.filter((player) => player.id !== myPlayer?.id),
@@ -726,7 +738,9 @@ export default function PlaymatRoomPage() {
             >
               {gameState.phase === "action"
                 ? t("playmat.endPhaseButton")
-                : t("playmat.nextRoundButton")}
+                : gameState.round >= STANDARD_ROUNDS
+                  ? t("playmat.finishGameButton")
+                  : t("playmat.nextRoundButton")}
               <ChevronRight size={16} aria-hidden="true" />
             </button>
           </div>
@@ -845,64 +859,69 @@ export default function PlaymatRoomPage() {
             const mine = modal.ownerId === myPlayer.id;
             return (
               <PlaymatModal onClose={closeModal} title={fighter.name}>
-                <div className="fighter-sheet">
-                  <FighterTile fighter={fighter} state={fighterState} warbandId={ownerWarbandId} />
-                  <div className="fighter-sheet-info">
-                    <p>
-                      {t("playmat.woundsShort")}: {fighter.wounds} · {t("playmat.damageLabel")}:{" "}
-                      {fighterState.damage}
-                    </p>
-                    {mine ? (
-                      <>
-                        <div className="fighter-sheet-controls">
-                          <button
-                            className="playmat-action ghost"
-                            disabled={fighterState.damage <= 0}
-                            onClick={() =>
-                              void sendEvent("ADJUST_WOUNDS", { fighterId: fighter.id, amount: -1 })
-                            }
-                            type="button"
-                          >
-                            <Minus size={16} aria-hidden="true" /> {t("playmat.healWound")}
-                          </button>
-                          <button
-                            className="playmat-action primary"
-                            onClick={() =>
-                              void sendEvent("ADJUST_WOUNDS", { fighterId: fighter.id, amount: 1 })
-                            }
-                            type="button"
-                          >
-                            <Plus size={16} aria-hidden="true" /> {t("playmat.addWound")}
-                          </button>
-                        </div>
-                        <div className="fighter-sheet-controls">
-                          <button
-                            className="playmat-action ghost"
-                            onClick={() =>
-                              void sendEvent("TOGGLE_INSPIRED", { fighterId: fighter.id })
-                            }
-                            type="button"
-                          >
-                            {fighterState.inspired ? t("playmat.uninspire") : t("playmat.inspire")}
-                          </button>
-                          <button
-                            className="playmat-action danger"
-                            onClick={() =>
-                              void sendEvent("SET_FIGHTER_OUT", {
-                                fighterId: fighter.id,
-                                out: !fighterState.out
-                              })
-                            }
-                            type="button"
-                          >
-                            {fighterState.out
-                              ? t("playmat.fighterReturn")
-                              : t("playmat.fighterOutAction")}
-                          </button>
-                        </div>
-                      </>
-                    ) : null}
-                  </div>
+                <div className="fighter-zoom">
+                  <FighterTile
+                    fighter={fighter}
+                    state={fighterState}
+                    warbandId={ownerWarbandId}
+                    zoom
+                  />
+                </div>
+                <div className="fighter-sheet-info">
+                  <p>
+                    {t("playmat.woundsShort")}: {fighter.wounds} · {t("playmat.damageLabel")}:{" "}
+                    {fighterState.damage}
+                  </p>
+                  {mine ? (
+                    <>
+                      <div className="fighter-sheet-controls">
+                        <button
+                          className="playmat-action ghost"
+                          disabled={fighterState.damage <= 0}
+                          onClick={() =>
+                            void sendEvent("ADJUST_WOUNDS", { fighterId: fighter.id, amount: -1 })
+                          }
+                          type="button"
+                        >
+                          <Minus size={16} aria-hidden="true" /> {t("playmat.healWound")}
+                        </button>
+                        <button
+                          className="playmat-action primary"
+                          onClick={() =>
+                            void sendEvent("ADJUST_WOUNDS", { fighterId: fighter.id, amount: 1 })
+                          }
+                          type="button"
+                        >
+                          <Plus size={16} aria-hidden="true" /> {t("playmat.addWound")}
+                        </button>
+                      </div>
+                      <div className="fighter-sheet-controls">
+                        <button
+                          className="playmat-action ghost"
+                          onClick={() =>
+                            void sendEvent("TOGGLE_INSPIRED", { fighterId: fighter.id })
+                          }
+                          type="button"
+                        >
+                          {fighterState.inspired ? t("playmat.uninspire") : t("playmat.inspire")}
+                        </button>
+                        <button
+                          className="playmat-action danger"
+                          onClick={() =>
+                            void sendEvent("SET_FIGHTER_OUT", {
+                              fighterId: fighter.id,
+                              out: !fighterState.out
+                            })
+                          }
+                          type="button"
+                        >
+                          {fighterState.out
+                            ? t("playmat.fighterReturn")
+                            : t("playmat.fighterOutAction")}
+                        </button>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
 
                 <h3 className="pile-section-title">
@@ -1096,7 +1115,6 @@ export default function PlaymatRoomPage() {
                 onClick={() => {
                   closeModal();
                   void sendEvent("END_GAME");
-                  void endRoom();
                 }}
                 type="button"
               >

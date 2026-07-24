@@ -46,7 +46,8 @@ export interface PlaymatRivalsDeckDef {
 // Opening hands dealt automatically when the game starts.
 export const OPENING_POWER_HAND = 5;
 export const OPENING_OBJECTIVE_HAND = 3;
-// A standard game lasts 3 rounds; the playmat allows continuing past this.
+// A standard game lasts exactly 3 rounds; ending the final round's end phase
+// concludes the game (see engine.ts's END_PHASE handler).
 export const STANDARD_ROUNDS = 3;
 
 export const rivalsDecks: PlaymatRivalsDeckDef[] = [
