@@ -3758,7 +3758,10 @@ button.card-tile:hover {
   .lead-mine .tug-fill.mine,
   .banner-glory b,
   .glory-value b,
-  .hand-row .card-tile {
+  .hand-row .card-tile,
+  .ping-pill,
+  .ping-reveal-layer,
+  .ping-reveal {
     animation: none;
   }
 
@@ -3985,6 +3988,119 @@ button.card-tile:hover {
   color: var(--muted);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---- Event pings (opponent action toasts) ----------------------------- */
+
+.ping-ticker {
+  position: fixed;
+  top: 122px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: min(92vw, 420px);
+  pointer-events: none;
+}
+
+.ping-pill {
+  max-width: 100%;
+  padding: 6px 14px;
+  border: 1px solid rgba(216, 167, 71, 0.4);
+  border-radius: 999px;
+  background: rgba(23, 19, 16, 0.94);
+  box-shadow: 0 4px 14px var(--shadow);
+  color: var(--parchment);
+  font-size: 0.8rem;
+  text-align: center;
+  animation: ping-pill-in 0.25s ease backwards;
+}
+
+@keyframes ping-pill-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.ping-reveal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 56;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 8, 6, 0.62);
+  animation: ping-fade-in 0.2s ease;
+}
+
+@keyframes ping-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.ping-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  text-align: center;
+  animation: ping-reveal-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+}
+
+@keyframes ping-reveal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.72) rotate(-3deg);
+  }
+}
+
+.ping-caption {
+  margin: 0;
+  max-width: min(86vw, 420px);
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  letter-spacing: 0.04em;
+  color: var(--gilded);
+  text-shadow: 0 2px 10px var(--shadow);
+}
+
+.ping-reveal.tone-danger .ping-caption {
+  color: #ffd4cf;
+}
+
+.ping-card {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.ping-card .card-tile.card-lg {
+  width: min(272px, 66vw);
+  box-shadow: 0 12px 38px var(--shadow), 0 0 0 1px var(--line);
+}
+
+.ping-glory {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1a1511;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.ping-fighter .fighter-tile {
+  width: min(220px, 58vw);
 }
 
 .playmat-standings {

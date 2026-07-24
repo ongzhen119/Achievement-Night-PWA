@@ -12,12 +12,15 @@ import {
   Plus,
   RotateCcw,
   Swords,
-  Trophy
+  Trophy,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import CardActionModal, { CardAction } from "../components/playmat/CardActionModal";
 import CardTile from "../components/playmat/CardTile";
 import EventLogPanel from "../components/playmat/EventLogPanel";
+import EventPing, { playGlorySound } from "../components/playmat/EventPing";
 import FighterTile from "../components/playmat/FighterTile";
 import OpponentArea from "../components/playmat/OpponentArea";
 import PileViewerModal from "../components/playmat/PileViewerModal";
@@ -104,6 +107,9 @@ export default function PlaymatRoomPage() {
   const [handTab, setHandTab] = useState<"power" | "objective">("power");
   const [seat, setSeat] = useState<SeatSpec | null>(null);
   const [copied, setCopied] = useState(false);
+  const [soundOn, setSoundOn] = useState(
+    () => window.localStorage.getItem("playmat-sound") !== "off"
+  );
   const setupSentRef = useRef(false);
   const gameEndSentRef = useRef(false);
 
@@ -203,6 +209,13 @@ export default function PlaymatRoomPage() {
   }, [players, gameState.players]);
 
   const closeModal = () => setModal(null);
+
+  const toggleSound = () => {
+    setSoundOn((previous) => {
+      window.localStorage.setItem("playmat-sound", previous ? "off" : "on");
+      return !previous;
+    });
+  };
 
   const copyCode = async () => {
     try {
@@ -724,7 +737,12 @@ export default function PlaymatRoomPage() {
               <button
                 aria-label={t("playmat.gainGlory")}
                 className="icon-button"
-                onClick={() => void sendEvent("GAIN_GLORY", { amount: 1 })}
+                onClick={() => {
+                  if (soundOn) {
+                    playGlorySound();
+                  }
+                  void sendEvent("GAIN_GLORY", { amount: 1 });
+                }}
                 type="button"
               >
                 <Plus size={16} aria-hidden="true" />
@@ -796,6 +814,22 @@ export default function PlaymatRoomPage() {
             ) : null}
           </div>
         </footer>
+      ) : null}
+
+      {!gameOver ? (
+        <EventPing
+          events={events}
+          gameState={gameState}
+          myPlayerId={myPlayer.id}
+          onCardPress={(ownerId, zone, cardId) =>
+            setModal({ kind: "card", ownerId, zone, cardId })
+          }
+          onFighterPress={(ownerId, fighterId) =>
+            setModal({ kind: "fighter", ownerId, fighterId })
+          }
+          players={players}
+          soundOn={soundOn}
+        />
       ) : null}
 
       {/* ---------------- Modals ---------------- */}
@@ -1123,6 +1157,14 @@ export default function PlaymatRoomPage() {
                   : t("playmat.endGameEarlyButton")}
               </button>
             ) : null}
+            <button className="playmat-action ghost" onClick={toggleSound} type="button">
+              {soundOn ? (
+                <Volume2 size={16} aria-hidden="true" />
+              ) : (
+                <VolumeX size={16} aria-hidden="true" />
+              )}{" "}
+              {t(soundOn ? "playmat.soundOn" : "playmat.soundOff")}
+            </button>
             <button
               className="playmat-action ghost"
               onClick={() => {
